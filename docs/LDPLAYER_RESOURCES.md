@@ -234,3 +234,42 @@ $ldAdbPath = "D:\LDPlayer\LDPlayer14\adb.exe"
 helpers รุ่นปัจจุบันใช้ local default host/พอร์ต 5037 และล้าง remote ADB server
 environment overrides เฉพาะ child process เพื่อให้ client auto-start local ADB
 ได้ การแก้ startup ไม่ได้ยืนยันว่า shell error: closed ก่อนหน้านี้หายแล้ว
+
+## หลัง shell echo ตอบ adb-ok บนเครื่อง ASUS
+
+ภาพล่าสุดยืนยันว่า daemon เริ่มได้, `emulator-5554` มีสถานะ `device` และ
+shell echo ตอบ `adb-ok` แล้ว ยังไม่ยืนยัน package query หรือ resource pull
+เพราะ inventory รอบก่อนบน ASUS หยุดด้วย error: closed ให้เปิด LDPlayer ค้างไว้
+แล้วรันชุดนี้จาก PowerShell ตำแหน่งใดก็ได้:
+
+```powershell
+& {
+  $ErrorActionPreference = "Stop"
+  $ldAdbPath = "D:\LDPlayer\LDPlayer14\adb.exe"
+  $chaosResearchDir = Join-Path $env:USERPROFILE "Downloads\chaos-research"
+  New-Item -ItemType Directory -Path "$chaosResearchDir\tools" -Force | Out-Null
+  Set-Location -LiteralPath $chaosResearchDir
+
+  foreach ($toolFile in @("inventory_android_resources.py", "export_android_research.py")) {
+    Invoke-WebRequest -UseBasicParsing -Uri "https://raw.githubusercontent.com/xKanomRoo/Lord-of-Mysteries-Roguelike-Deck-Building/main/tools/$toolFile" -OutFile ".\tools\$toolFile" -ErrorAction Stop
+  }
+
+  $chaosRunTag = Get-Date -Format "yyyyMMdd-HHmmss-fff"
+  $chaosInventoryDir = ".local/ldplayer-resources-$chaosRunTag"
+  $chaosExportDir = ".local/chaos-runtime-export-$chaosRunTag"
+
+  py .\tools\inventory_android_resources.py --adb "$ldAdbPath" --serial "emulator-5554" --output "$chaosInventoryDir"
+  if ($LASTEXITCODE -ne 0) { throw "Inventory failed; export was not started." }
+
+  py .\tools\export_android_research.py --adb "$ldAdbPath" --report "$chaosInventoryDir/report.json" --output "$chaosExportDir"
+  if ($LASTEXITCODE -ne 0) { throw "Export failed." }
+
+  Invoke-Item -LiteralPath $chaosExportDir
+}
+```
+
+ชื่อ output มี timestamp เพื่อไม่เขียนทับผลเก่า บล็อกหยุดเมื่อดาวน์โหลด helper,
+inventory หรือ export ล้มเหลว ตัว exporter ตรวจ package และ paths/sizes จริง
+ก่อน pull; ถ้า resources ไม่ตรงกับชุดที่เลือกไว้จะหยุดพร้อม error
+เมื่อสำเร็จ แนบ `chaos-runtime-core.zip` และ `chaos-runtime-lang-en.zip`
+จากโฟลเดอร์ที่เปิด ถ้ามี error ส่งข้อความนั้นเพื่อตรวจขั้นที่ล้มเหลว
