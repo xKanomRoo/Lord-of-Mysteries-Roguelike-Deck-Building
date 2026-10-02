@@ -147,10 +147,12 @@ spans 1,703,936 bytes แทนการคัดลอก chunks หลาย G
 เพื่อ revalidate selection ก่อน export ขั้นนี้ยังต้องรันบน LDPlayer ของผู้ใช้
 ดู [คำสั่ง Windows](../LDPLAYER_RESOURCES.md#ดึงค่าการ์ดและฉากต่อสู้เป็น-byte-ranges)
 
-การรัน range export บน Windows ครั้งแรกหยุดตอน binary read ด้วยข้อความที่ยังไม่มี
-return code/byte counts จึงยังไม่ทราบสาเหตุและยังไม่ได้รับ 18 payloads นี้
-helper เพิ่ม read context, counts และ bounded remote `dd` diagnostic สำหรับ retry;
-การแก้ข้อความวินิจฉัยไม่ได้พิสูจน์ว่า Windows export สำเร็จแล้ว
+การรัน Windows พร้อม diagnostic ยืนยันว่า `exec-out` ทำงาน แต่ `dd` ที่เรียกตรง ๆ
+ตอบ `no such tool` / remote exit 127 ช่วงแรกต้องได้ 131,072 bytes กลับได้ 17 bytes
+probe ผู้ใช้แสดงว่า `/system/bin/toybox dd` มี applet พร้อม flags ที่ต้องใช้
+helper จึงตรวจ fixed dd backends ด้วย synthetic bytes ไป `/dev/null` ก่อนดึง manifest
+และใช้ backend ที่ผ่านทั้ง binary reads กับ failure diagnostic; ยังไม่ได้รับ
+18 payloads นี้และยังไม่อ้างว่า export ด้วย Toybox บน Windows สำเร็จแล้ว
 
 หลักการออกแบบที่มี evidence รองรับระดับข้อความคือแยก name/description/keyword
 ออกจาก effect parameters และให้ tutorial อ้างคำศัพท์ชุดเดียวกัน สำหรับเกม

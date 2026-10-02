@@ -7,7 +7,7 @@ Vite 7.3.6 จาก lockfile และ Chromium 151 บน Linux
 |---|---|
 | ติดตั้งด้วย `npm ci` | ผ่าน; hash ของ package-lock.json ก่อน/หลังตรงกัน |
 | `npm test` | ผ่าน 12 tests, ไม่มี skipped |
-| `npm run test:python` | ผ่าน 270 tests, ไม่มี skipped; รวม runtime ZIP/SSRA/resource/text readers และ bounded byte-range export/diagnostics เพิ่มจาก ADB/native/entry/PLPcK/CSB/texture/lore/archive tests เดิม |
+| `npm run test:python` | ผ่าน 273 tests, ไม่มี skipped; รวม runtime ZIP/SSRA/resource/text readers และ bounded byte-range export/backend detection/diagnostics เพิ่มจาก ADB/native/entry/PLPcK/CSB/texture/lore/archive tests เดิม |
 | `npm run build` | ผ่าน; ได้ production bundle |
 | `npm run lore:build` และค้น `ritual memory` | ผ่าน; 1 original-design source, 2 chunks, source/hash/line refs |
 | `npm run smoke` | ผ่านใน Chromium จริง; ชนะสามห้องด้วย 50 การกระทำและเลือกสองรางวัล |
@@ -33,10 +33,10 @@ Vite 7.3.6 จาก lockfile และ Chromium 151 บน Linux
 | SSRA resource extraction | 19 tests ผ่าน; actual text.db22,214,156bytes และ main.jbin47,516,297bytes ผ่าน boundedZstd/SSRC/decodedFHSH; receipt payload SHA ตรวจใหม่; resource code ไม่ execute |
 | English game text | 12 tests ผ่าน รวม Unicode casefold excerpt regression; actual native source-pinned wrapper+PLPcK อ่าน216,616records/108,306textsครบ; card@4,725textsรวมvariants; numeric placeholders ยังไม่เติม |
 | Main cached modules | Zstd/FHSH ผ่าน; private static linked-record inventory2,167records/2,166V8cache; compact reader ปฏิเสธ incomplete coverage10,283bytes ตามจริง; ไม่ execute หรือคืน source JS |
-| Bounded range exporter | 19 tests ผ่าน รวม local POSIX sh/dd probe, exact binary count และ discarded-payload diagnostic; profileจริง18resources622,458storedbytes/1,703,936alignedbytes deriveผ่าน offline; Windows run แรกหยุด binary byte-count error ที่ไม่ระบุ counts; helper เพิ่ม read context/rc/counts และ same-range dd diagnostic แต่ยังไม่ได้รับ ZIPใหม่ |
+| Bounded range exporter | 22 tests ผ่าน รวม local POSIX sh/dd/probe grammar, exact counts, failed bare-dd/successful Toybox backend regression และ fail-fast เมื่อไม่มี reader; profileจริง18resources622,458storedbytes/1,703,936alignedbytes deriveผ่าน offline; Windows diagnostic ยืนยัน bare dd no such tool/127 แต่ Toybox dd help รองรับ; full Toybox export และ ZIPใหม่ยังรอผู้ใช้ |
 | Runtime research dependency | isolated zstandard0.25.0 wheel ตรวจ SHA ตรง official PyPI และ bounded decode probe ผ่าน; แยก .local/runtime-venv จากเกม |
 | ADB package query | แยก transport failure จาก successful empty/malformed response; screenshot ผู้ใช้ยืนยัน adb-ok และภายหลังส่ง exportZIPs ครบ; ไม่ใช่ cloud execution ของ Windows commands |
-| Local ADB startup | runners ใช้ -P5037 โดยไม่ใส่ -H; screenshot ผู้ใช้ยืนยัน daemon/device/adb-ok และได้รับ selected exportZIPsแล้ว; new byte-range run หยุด binary read และยังไม่ทราบสาเหตุ |
+| Local ADB startup | runners ใช้ -P5037 โดยไม่ใส่ -H; screenshot ผู้ใช้ยืนยัน daemon/device/adb-ok และได้รับ selected exportZIPsแล้ว; ADB34.0.4-10411341 exec-out echo ผ่าน; binary read หยุดเพราะ bare dd no such tool ไม่ใช่ startup failure |
 | ADB executable selection | inventory/export ปฏิเสธ dnplayer.exe ก่อนสร้าง subprocess/ออกคำสั่ง; Windows filename comparison จำลองแบบไม่สนตัวพิมพ์ และ symlink ไป launcher ถูกปฏิเสธ; ไม่ได้ execute LDPlayer จริง |
 | Export ขนาดจริงด้วย fake ADB | 6 synthetic payloads มี sizes ตรง profile จริง; Core ZIP 25,785,250 bytes และ English ZIP 15,978,834 bytes; member/ZIP SHA และ source report SHA ตรวจตรง ทั้งสองไฟล์ต่ำกว่า30MiB; ไม่ใช่เกม assets จริง |
 | Wireframe หลัง native schema | สร้างใหม่ได้ 18 scenes / 474 nodes รวม geometry ของ TileSprite; browser check ที่รายงานด้านบนทำกับ bootstrap รุ่นก่อน native schema |

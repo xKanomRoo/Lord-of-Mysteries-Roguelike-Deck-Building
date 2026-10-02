@@ -9,6 +9,7 @@ whole resource chunks, credentials, account files, or executable code are run.
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
 import hashlib
 import json
 import os
@@ -59,6 +60,20 @@ APPROVED_PATHS = (
     "db/battle_system_effect@battle_system_effect.db", "wnd/scene_battle_field.csb",
     "wnd/game_hud_hand.csb", "ui/game_hud_handpiles.csb", "wnd/game_card_select_hand.csb",
     "wnd/card.csb",
+)
+
+
+@dataclass(frozen=True)
+class RangeReader:
+    identity: str
+    prefix: str
+
+
+READERS = (
+    RangeReader("dd", "dd"),
+    RangeReader("system-toybox-dd", "/system/bin/toybox dd"),
+    RangeReader("system-xbin-busybox-dd", "/system/xbin/busybox dd"),
+    RangeReader("system-bin-busybox-dd", "/system/bin/busybox dd"),
 )
 
 
@@ -319,7 +334,48 @@ def _check_chunk(runner, serial: str, read: dict) -> None:
         raise RangeExportError("Selected resource chunk size changed or disagrees with the manifest")
 
 
-def dd_command(read: dict) -> str:
+def _reader(reader: RangeReader) -> RangeReader:
+    if reader not in READERS:
+        raise RangeExportError("Android range reader must be one of the fixed approved backends")
+    return reader
+
+
+def reader_probe_command(reader: RangeReader) -> str:
+    prefix = _reader(reader).prefix
+    return (f"{prefix} if=/dev/zero of=/dev/null bs={BLOCK_BYTES} skip=1 count=1 2>&1; "
+            "ssra_reader_probe_status=$?; printf '__ssra_reader_probe_exit=%s\\n' \"$ssra_reader_probe_status\"")
+
+
+def select_reader(runner, serial: str) -> tuple[RangeReader, list[dict]]:
+    """Probe fixed Android binaries against inert data, never game resources."""
+    probes = []
+    for reader in READERS:
+        try:
+            result = runner.run_diagnostic(["-s", serial, "shell", reader_probe_command(reader)])
+        except (RangeExportError, existing.ExportError, android.InventoryError, OSError) as error:
+            raise RangeExportError(f"Android range-reader probe transport failed on {serial}: {android.diagnostic(str(error))[:512]}") from error
+        if len(result.stdout) + len(result.stderr) > MAX_DIAGNOSTIC_OUTPUT_BYTES:
+            raise RangeExportError("Android range-reader probe exceeded its 64 KiB text limit")
+        text = result.stdout.decode("utf-8", "replace")
+        markers = re.findall(r"(?:^|\n)__ssra_reader_probe_exit=([0-9]{1,3})\r?(?=\n|$)", text)
+        status = int(markers[0]) if len(markers) == 1 and int(markers[0]) <= 255 else None
+        detail = android.diagnostic(re.sub(r"(?:^|\n)__ssra_reader_probe_exit=[^\r\n]*", "", text))[:256]
+        probes.append({"reader": reader.identity, "shell_exit": result.returncode,
+                       "remote_exit": status, "usable": result.returncode == 0 and status == 0,
+                       "remote_detail": detail, "local_ADB_detail": android.diagnostic(result.stderr)[:256]})
+        if result.returncode:
+            raise RangeExportError(f"Android range-reader probe transport failed on {serial}: shell_exit={result.returncode}; {android.diagnostic(result.stderr)[:512] or detail or 'no diagnostic returned'}")
+        if status == 0:
+            return reader, probes
+    details = "; ".join(f"{item['reader']}: remote_exit={item['remote_exit']}; {item['remote_detail'] or 'no remote diagnostic'}" for item in probes)
+    raise RangeExportError(
+        f"No usable bounded Android dd reader found on {serial}. Checked only fixed dd/toybox/busybox backends; "
+        f"no manifest or resource chunks were copied. Share this capability result for the next reader choice: {details}"
+    )
+
+
+def dd_command(read: dict, reader: RangeReader = READERS[0]) -> str:
+    prefix = _reader(reader).prefix
     name = read["chunk_filename"]
     if not isinstance(name, str) or not re.fullmatch(r"[A-Za-z0-9_.-]+\.ssrc", name):
         raise RangeExportError("Unsafe chunk filename")
@@ -334,22 +390,22 @@ def dd_command(read: dict) -> str:
     # Suppress dd's remote statistics/errors so they cannot become payload bytes;
     # the exact returned length still rejects missing or failed range reads.
     # Popen.stderr contains local ADB diagnostics only, not remote dd stderr.
-    return f"dd if={shlex.quote(remote)} bs={BLOCK_BYTES} skip={skip} count={count} 2>/dev/null"
+    return f"{prefix} if={shlex.quote(remote)} bs={BLOCK_BYTES} skip={skip} count={count} 2>/dev/null"
 
 
-def diagnostic_dd_command(read: dict) -> str:
+def diagnostic_dd_command(read: dict, reader: RangeReader = READERS[0]) -> str:
     """Read the same bounded span into /dev/null, returning remote status only."""
-    command = dd_command(read).removesuffix(" 2>/dev/null")
+    command = dd_command(read, reader).removesuffix(" 2>/dev/null")
     return (command + " of=/dev/null 2>&1; ssra_range_dd_status=$?; "
             "printf '__ssra_range_dd_exit=%s\\n' \"$ssra_range_dd_status\"")
 
 
-def _diagnose_remote_read(runner, serial: str, read: dict) -> str:
+def _diagnose_remote_read(runner, serial: str, read: dict, reader: RangeReader) -> str:
     # This is one diagnostic after a failed export, never a transport fallback.
     # It reads only the failed <=1 MiB span, discards payload bytes remotely and
     # cannot rescue or publish the failed export.
     try:
-        result = runner.run_diagnostic(["-s", serial, "shell", diagnostic_dd_command(read)])
+        result = runner.run_diagnostic(["-s", serial, "shell", diagnostic_dd_command(read, reader)])
     except (RangeExportError, existing.ExportError, android.InventoryError, OSError) as error:
         return f"Same-range remote diagnostic transport failed: {android.diagnostic(str(error))[:512]}"
     if len(result.stdout) + len(result.stderr) > MAX_DIAGNOSTIC_OUTPUT_BYTES:
@@ -379,6 +435,7 @@ def export_ranges(plan_path: Path, output: Path, adb: Path | None, serial: str, 
         raise RangeExportError("Could not list local ADB devices")
     serial = android.select_device(android.parse_devices(devices.stdout), serial)
     android.validate_package_query(runner.run(["-s", serial, "shell", f"pm path {PACKAGE}"]), serial)
+    reader, reader_probes = select_reader(runner, serial)
     manifest_target = existing.Target(MANIFEST_PATH, MANIFEST_BYTES, existing.PACK_NAMES[0])
     existing._check_remote(runner, serial, manifest_target)
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -397,7 +454,7 @@ def export_ranges(plan_path: Path, output: Path, adb: Path | None, serial: str, 
         for ordinal, read in enumerate(reads):
             _check_chunk(runner, serial, read)
             try:
-                result = runner.run_binary(["-s", serial, "exec-out", dd_command(read)], read["bytes"])
+                result = runner.run_binary(["-s", serial, "exec-out", dd_command(read, reader)], read["bytes"])
                 if (result.returncode or len(result.stdout) != read["bytes"]
                         or len(result.stderr) > MAX_BINARY_STDERR_BYTES):
                     detail = android.diagnostic(result.stderr)[:512] or "no local ADB diagnostic returned"
@@ -407,10 +464,10 @@ def export_ranges(plan_path: Path, output: Path, adb: Path | None, serial: str, 
                         f"received_stdout_bytes={len(result.stdout)}; local_stderr_bytes={len(result.stderr)}); {detail}"
                     )
             except RangeExportError as error:
-                context = (f"Read {ordinal + 1}/{len(reads)} on {serial}: "
+                context = (f"Read {ordinal + 1}/{len(reads)} on {serial}: reader={reader.identity}; "
                            f"chunk={read['chunk_filename']}; physical_offset={read['physical_offset']}; "
                            f"skip_blocks={read['skip_blocks']}; count_blocks={read['count_blocks']}")
-                diagnostic = _diagnose_remote_read(runner, serial, read)
+                diagnostic = _diagnose_remote_read(runner, serial, read, reader)
                 raise RangeExportError(f"{context}. {error}. {diagnostic}") from error
             readback[ordinal] = result.stdout
             _check_chunk(runner, serial, read)
@@ -447,6 +504,7 @@ def export_ranges(plan_path: Path, output: Path, adb: Path | None, serial: str, 
                             "expected_decoded_xxh64": item["file_hash64"]})
         aligned_bytes = sum(read["bytes"] for read in reads)
         index = {"schema_version": 1, "profile": PROFILE, "package": PACKAGE,
+                 "range_reader": reader.identity, "reader_capability_probes": reader_probes,
                  "source_plan_sha256": plan_hash, "source_manifest_sha256": MANIFEST_SHA256,
                  "manifest": {"archive_path": "manifest/00.bin", "relative_path": MANIFEST_PATH,
                               "bytes": MANIFEST_BYTES, "sha256": MANIFEST_SHA256},
@@ -495,6 +553,7 @@ def export_ranges(plan_path: Path, output: Path, adb: Path | None, serial: str, 
             output.rmdir()
             raise
     return {"filename": PACK_NAME, "bytes": size, "sha256": digest,
+            "range_reader": reader.identity,
             "resource_count": len(entries), "stored_payload_bytes": sum(item["bytes"] for item in entries),
             "aligned_chunk_readback_bytes": aligned_bytes,
             "manifest_bytes": MANIFEST_BYTES, "total_transfer_bytes": MANIFEST_BYTES + aligned_bytes}
@@ -513,6 +572,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Range export failed: {android.diagnostic(str(error))}", file=sys.stderr)
         return 2
     print(f"Exported {result['resource_count']} stored resource ranges ({result['stored_payload_bytes']} bytes).")
+    print(f"Android range reader: {result['range_reader']}")
     print(f"Transferred manifest {result['manifest_bytes']} bytes + aligned chunks {result['aligned_chunk_readback_bytes']} bytes.")
     print(f"ZIP: {args.output / result['filename']} ({result['bytes']} bytes; SHA-256 {result['sha256']})")
     print("Upload this inert ZIP for static decoding; whole-chunk checksums and source authenticity remain unverified.")

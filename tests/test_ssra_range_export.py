@@ -47,7 +47,8 @@ def fixture():
 class FakeRunner:
     def __init__(self, manifest, chunks, *, corrupt_manifest=False, stat_failure=False,
                  changed_after=False, binary_result=None, package_result=None,
-                 diagnostic_result=None, diagnostic_error=None):
+                 diagnostic_result=None, diagnostic_error=None, available_reader="dd",
+                 probe_results=None):
         self.manifest = manifest
         self.chunks = chunks
         self.corrupt_manifest = corrupt_manifest
@@ -57,9 +58,12 @@ class FakeRunner:
         self.package_result = package_result
         self.diagnostic_result = diagnostic_result
         self.diagnostic_error = diagnostic_error
+        self.available_reader = available_reader
+        self.probe_results = probe_results or {}
         self.calls = []
         self.binary_calls = []
         self.diagnostic_calls = []
+        self.probe_calls = []
 
     def run(self, arguments, **limits):
         self.calls.append((arguments, limits))
@@ -87,7 +91,8 @@ class FakeRunner:
         self.binary_calls.append(arguments)
         if self.binary_result is not None:
             return self.binary_result
-        match = re.fullmatch(r"dd if=(.+)/([A-Za-z0-9_.-]+\.ssrc) bs=65536 skip=([0-9]+) count=([0-9]+)( 2>/dev/null)?", arguments[-1])
+        prefixes = "(?:" + "|".join(re.escape(reader.prefix) for reader in export.READERS) + ")"
+        match = re.fullmatch(prefixes + r" if=(.+)/([A-Za-z0-9_.-]+\.ssrc) bs=65536 skip=([0-9]+) count=([0-9]+)( 2>/dev/null)?", arguments[-1])
         if not match or match.group(1) != export.RESOURCE_ROOT + "/gameres/chunks":
             raise AssertionError("Binary command did not use a single fixed resource dd argument")
         start, length = int(match.group(3)) * export.BLOCK_BYTES, int(match.group(4)) * export.BLOCK_BYTES
@@ -99,6 +104,17 @@ class FakeRunner:
         return android.CommandResult(0, data)
 
     def run_diagnostic(self, arguments):
+        if "__ssra_reader_probe_exit=" in arguments[-1]:
+            self.probe_calls.append(arguments)
+            readers = [reader for reader in export.READERS if arguments[-1] == export.reader_probe_command(reader)]
+            if len(readers) != 1:
+                raise AssertionError("Probe did not use one fixed reader and inert /dev/zero -> /dev/null span")
+            reader = readers[0]
+            if reader.identity in self.probe_results:
+                return self.probe_results[reader.identity]
+            if reader.identity == self.available_reader:
+                return android.CommandResult(0, b"1+0 records in\n1+0 records out\n__ssra_reader_probe_exit=0\n")
+            return android.CommandResult(0, (reader.prefix + ": no such tool\n__ssra_reader_probe_exit=127\n").encode())
         self.diagnostic_calls.append(arguments)
         if self.diagnostic_error is not None:
             raise self.diagnostic_error
@@ -170,6 +186,7 @@ class SSRARangeExportTests(unittest.TestCase):
         self.assertEqual(result["total_transfer_bytes"], len(self.manifest) + 135_552)
         self.assertEqual(len(runner.binary_calls), 2)
         self.assertEqual(runner.diagnostic_calls, [])
+        self.assertEqual(len(runner.probe_calls), 1)
         path = self.output / export.PACK_NAME
         self.assertEqual(result["sha256"], hashlib.sha256(path.read_bytes()).hexdigest())
         with zipfile.ZipFile(path) as archive:
@@ -178,6 +195,8 @@ class SSRARangeExportTests(unittest.TestCase):
             self.assertEqual(archive.read("files/00.bin"), self.chunks["base_b00_0.ssrc"][69_990:70_000] + self.chunks["base_b01_0.ssrc"][:20])
             self.assertEqual(archive.read("files/01.bin"), self.chunks["base_b00_0.ssrc"][1000:1200])
             index = json.loads(archive.read("research-index.json"))
+            self.assertEqual(index["range_reader"], "dd")
+            self.assertEqual(index["reader_capability_probes"][0]["remote_exit"], 0)
             self.assertFalse(index["scope"]["whole_chunk_hashes_verified"])
             self.assertFalse(index["scope"]["decoded_FHSH_verified"])
             self.assertEqual(index["source_manifest_sha256"], self.digest)
@@ -282,6 +301,56 @@ class SSRARangeExportTests(unittest.TestCase):
         self.assertIn("bs=65536 skip=0 count=2 of=/dev/null 2>&1", diagnostic[-1])
         self.assertNotIn("2>/dev/null", diagnostic[-1])
         self.assert_clean()
+
+    def test_missing_bare_dd_uses_explicit_toybox_for_binary_and_failure_diagnostic(self):
+        runner = FakeRunner(self.manifest, self.chunks, available_reader="system-toybox-dd")
+        result = self.run_export(runner)
+        self.assertEqual(result["range_reader"], "system-toybox-dd")
+        self.assertEqual(len(runner.probe_calls), 2)
+        self.assertTrue(all(call[-1].startswith("/system/bin/toybox dd if=") for call in runner.binary_calls))
+        with zipfile.ZipFile(self.output / export.PACK_NAME) as archive:
+            index = json.loads(archive.read("research-index.json"))
+            self.assertEqual(index["range_reader"], "system-toybox-dd")
+            self.assertEqual([probe["remote_exit"] for probe in index["reader_capability_probes"]], [127, 0])
+            self.assertIn("no such tool", index["reader_capability_probes"][0]["remote_detail"])
+        self.output.rename(self.root / "successful-toybox-output")
+        failed = FakeRunner(self.manifest, self.chunks, available_reader="system-toybox-dd",
+                            binary_result=android.CommandResult(0, b""))
+        with self.assertRaises(export.RangeExportError) as raised:
+            self.run_export(failed)
+        self.assertIn("reader=system-toybox-dd", str(raised.exception))
+        self.assertTrue(failed.diagnostic_calls[0][-1].startswith("/system/bin/toybox dd if="))
+        self.assert_clean()
+
+    def test_no_usable_reader_fails_before_manifest_or_game_resource_reads(self):
+        runner = FakeRunner(self.manifest, self.chunks, available_reader=None)
+        with self.assertRaisesRegex(export.RangeExportError, "No usable bounded Android dd reader") as raised:
+            self.run_export(runner)
+        self.assertIn("no manifest or resource chunks were copied", str(raised.exception))
+        self.assertEqual(len(runner.probe_calls), len(export.READERS))
+        self.assertEqual(len(runner.calls), 2)
+        self.assertEqual(runner.binary_calls, [])
+        self.assertEqual(runner.diagnostic_calls, [])
+        self.assert_clean()
+
+    def test_probe_remote_status_or_transport_failure_cannot_select_reader(self):
+        for result in (android.CommandResult(0, b"__ssra_reader_probe_exit=1\n"),
+                       android.CommandResult(0, b"unsupported count\n"),
+                       android.CommandResult(0, b"__ssra_reader_probe_exit=0\n__ssra_reader_probe_exit=0\n"),
+                       android.CommandResult(0, bytes(export.MAX_DIAGNOSTIC_OUTPUT_BYTES + 1)),
+                       android.CommandResult(1, b"__ssra_reader_probe_exit=0\n", b"error: closed")):
+            runner = FakeRunner(self.manifest, self.chunks, available_reader=None,
+                                probe_results={export.READERS[0].identity: result})
+            with self.subTest(result=(result.returncode, len(result.stdout))), self.assertRaises(export.RangeExportError):
+                self.run_export(runner)
+            self.assertEqual(len(runner.calls), 2)
+            self.assertEqual(runner.binary_calls, [])
+            self.assert_clean()
+        fake_reader = export.RangeReader("untrusted", "/tmp/custom-program dd")
+        with self.assertRaisesRegex(export.RangeExportError, "approved backends"):
+            export.reader_probe_command(fake_reader)
+        with self.assertRaisesRegex(export.RangeExportError, "approved backends"):
+            export.dd_command({}, fake_reader)
 
     def test_remote_dd_failure_is_reported_without_exposing_binary_or_retrying(self):
         runner = FakeRunner(self.manifest, self.chunks, binary_result=android.CommandResult(0, b""),
@@ -398,6 +467,12 @@ class SSRARangeExportTests(unittest.TestCase):
         self.assertEqual(diagnostic.returncode, 0)
         self.assertIn(b"__ssra_range_dd_exit=0\n", diagnostic.stdout)
         self.assertNotIn(data, diagnostic.stdout)
+        probe = subprocess.run([shutil.which("sh"), "-c",
+                                export.reader_probe_command(export.READERS[0])], **kwargs)
+        self.assertEqual(probe.returncode, 0)
+        self.assertIn(b"__ssra_reader_probe_exit=0\n", probe.stdout)
+        self.assertLess(len(probe.stdout), export.MAX_DIAGNOSTIC_OUTPUT_BYTES)
+        self.assertNotIn(bytes(65_536), probe.stdout)
 
     def test_binary_runner_uses_local_server_and_retains_exact_binary_stdout(self):
         data = b"\x00\xff\r\n" + bytes(range(256))

@@ -286,7 +286,8 @@ inventory หรือ export ล้มเหลว ตัว exporter ตรว
 aligned chunk readback รวม 1,703,936 bytes และอ่าน manifest 7,506,387 bytes
 เพื่อเทียบ source hash ก่อนดึงข้อมูล รวม transfer ที่คาดไว้ 9,210,323 bytes
 ไม่ต้องคัดลอก base chunks หลาย GB ตัว export ไม่เติมค่าการ์ดหรือ decode assets
-และยังไม่ได้ตรวจ Windows exec-out/dd จริงจนกว่าผู้ใช้รันขั้นนี้
+การรัน Windows ล่าสุดพบว่า `dd` ที่เรียกตรง ๆ ใช้ไม่ได้ แต่ `/system/bin/toybox dd`
+มี applet ที่รองรับ เครื่องมือจะตรวจ backend ก่อนดึง manifest; ZIP ชุดนี้ยังรอผลรันใหม่
 
 เปิด LDPlayer เดิมค้างไว้ คัดลอกบล็อกนี้ทั้งหมดลง PowerShell:
 
@@ -322,27 +323,29 @@ aligned bytes ออกก่อนบรรจุ ZIP ตรวจ byte count �
 decoded FHSH ตรวจภายหลังบนคลาวด์เมื่อคลาย stored blobs และไม่ execute resources
 ตัว manifest pin/hash ใช้ยืนยันชุดข้อมูล ไม่ใช่ CDN signature
 
-### เมื่อ binary read คืนจำนวนไบต์ไม่ตรง
+### เมื่อ dd ตอบ no such tool
 
-ผู้ใช้รันขั้น range export แล้วหยุดที่ `Binary ADB read failed or returned an
-unexpected byte count` ยังไม่ได้รับ ZIP ชุดนี้ ข้อความรุ่นแรกไม่แสดง return code
-หรือจำนวนไบต์ที่ได้รับ และซ่อน error ของ `dd` ฝั่ง Android จึงยังบอกสาเหตุไม่ได้
-แม้ shell และการ pull ZIP ชุดก่อนหน้าจะทำงานแล้ว
+ผลวินิจฉัยจาก Windows ASUS ยืนยัน ADB 1.0.41 / 34.0.4-10411341 และ probe
+`exec-out` ตอบ `exec-out-ok` แต่การอ่านช่วงแรกจาก `base_b02_0.ssrc` offset
+31,522,816 ต้องได้ 131,072 bytes กลับได้ 17 bytes ส่วน same-range shell
+diagnostic รายงาน `remote_dd_exit=127; remote_detail=dd: no such tool`
+สาเหตุนี้อยู่ที่ `dd` ที่เรียกตรง ๆ ไม่ใช่หลักฐานว่า ADB หรือเกมหายไป
+probe เพิ่มเติมแสดง help ของ `/system/bin/toybox dd` และ Toybox 0.8.9-android
+ส่วน `/system/xbin/busybox` ไม่พบ; ยังไม่ได้ยืนยัน full range export สำเร็จ
+
+helper ตรวจ fixed backends ก่อนดึง manifest: `dd`, `/system/bin/toybox dd`,
+`/system/xbin/busybox dd`, `/system/bin/busybox dd` แต่ละ probe ใช้ synthetic
+`/dev/zero` กับ `bs=65536 skip=1 count=1` ไป `/dev/null`
+และตรวจ remote exit marker ภายใต้ text output limit 64 KiB ถ้า `dd` ใช้ไม่ได้
+แต่ Toybox ผ่าน เครื่องมือจะใช้ `/system/bin/toybox dd` ทุกช่วงและบันทึก reader
+พร้อมผล probes ใน ZIP index ถ้าไม่มี backend ผ่าน จะหยุดก่อนคัดลอกไฟล์เกม
 
 helper รุ่นปัจจุบันแสดง chunk/offset, ADB return code และ expected/received bytes
-เมื่ออ่านไม่ครบ จะตรวจ `dd` อีกครั้งเฉพาะช่วงเดิมผ่าน Android shell โดยส่ง payload
+เมื่ออ่านไม่ครบ จะตรวจ backend เดิมอีกครั้งเฉพาะช่วงเดิมผ่าน Android shell โดยส่ง payload
 ไป `/dev/null` และแสดงเพียง bounded diagnostic กับ exit status ไม่แสดง binary
 ของเกม ไม่เพิ่ม resource ที่เลือก และยังหยุดโดยไม่ publish ZIP ที่ข้อมูลไม่ครบ
 รันบล็อกด้านบนอีกครั้งเพื่อดาวน์โหลด helper ใหม่ แล้วส่งข้อความ error ทั้งบรรทัด
 ถ้ายังหยุดอยู่ ไม่ต้องสร้าง inventory หรือส่ง core/English ZIPs ซ้ำ
 
-ตรวจว่า ADB รุ่นนั้นรองรับ raw exec service ได้ด้วยข้อความ ASCII:
-
-```powershell
-& "D:\LDPlayer\LDPlayer14\adb.exe" version
-& "D:\LDPlayer\LDPlayer14\adb.exe" -P 5037 -s "emulator-5554" exec-out "echo exec-out-ok"
-```
-
-ผลที่คาดสำหรับบรรทัดที่สองคือ `exec-out-ok` การผ่าน probe นี้ยังไม่ยืนยันว่าอ่าน
-binary ranges ได้ครบ อย่าใช้ PowerShell pipeline หรือ `>` เพื่อบันทึก binary
+อย่าใช้ PowerShell pipeline หรือ `>` เพื่อบันทึก binary
 จาก ADB เพราะ Windows PowerShell อาจแปลง bytes ให้ใช้ Python helper เป็นผู้รับ bytes

@@ -18,7 +18,7 @@
 | LDPlayer resources | ได้รับ runtime ZIPs แล้ว | payload 6 files /41,759,987 bytes ผ่าน CRC/SHA; manifest v4 มี 87,529 paths/57chunk entries; manifest list ไม่ได้พิสูจน์ทุก chunk อยู่ใน emulator |
 | English text DB | ถอดและตรวจ container ครบ | PLPcK216,616records/108,306texts; card@4,725 entries รวม variants; exact sizes/FHSH/native source hash ตรวจผ่าน; ดู runtime analysis |
 | main.jbin | คลาย Zstd/FHSH ผ่าน; linked metadata บางส่วน | 2,167records/2,166V8cache; compact parser ยังปฏิเสธ complete coverage; ไม่ execute หรือคืน source JS |
-| Card/battle range export | Windows binary read ยังไม่ผ่าน | การรันแรกหยุดด้วย byte-count error ที่ไม่ระบุ counts; ยังไม่มี 18 payloads; helper เพิ่ม status/counts และ remote dd diagnostic เพื่อแยกสาเหตุ |
+| Card/battle range export | พบ dd backend ใช้ไม่ได้; ยังรอ ZIP ใหม่ | ADB exec-out echo ผ่าน แต่ bare dd ตอบ no such tool/127; Toybox dd help รองรับ; helper ตรวจ fixed backend ก่อนดึงไฟล์และเลือก Toybox เมื่อ probe ผ่าน; ยังไม่มี 18 payloads |
 | Texture images | ถอด PNG ได้ 108 ไฟล์ | SCT1 RGB565+A8 2; SCT2 ASTC 106; ไม่ใช่ screenshot เกมที่ประกอบแล้ว |
 | กฎต้นแบบใน repository นี้ | งานออกแบบใหม่ | source และ tests ใน `src/`, `tests/` |
 | ภาพและข้อความต้นแบบ | งานออกแบบใหม่ | CSS/SVG ใน source ไม่ได้คัดลอก asset จากเกม |
