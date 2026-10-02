@@ -326,15 +326,18 @@ class AndroidInventoryTests(unittest.TestCase):
     def test_subprocess_locks_local_server_and_bounds_combined_pipe_output(self):
         process = FakeProcess(stdout=b"out", stderr=b"err")
         with (patch.object(android.subprocess, "Popen", return_value=process) as popen,
-              patch.dict(os.environ, {"ADB_SERVER_SOCKET": "tcp:remote:5037", "ANDROID_ADB_SERVER_ADDRESS": "remote"})):
+              patch.dict(os.environ, {"ADB_SERVER_SOCKET": "tcp:remote:5037", "ANDROID_ADB_SERVER_ADDRESS": "remote",
+                                      "ANDROID_ADB_SERVER_PORT": "9999"})):
             runner = android.AdbRunner(self.adb)
             result = runner.run(["devices", "-l"])
         self.assertEqual(result.stdout, b"out")
         self.assertEqual(result.stderr, b"err")
         argv = popen.call_args.args[0]
-        self.assertEqual(argv[1:5], ["-H", "127.0.0.1", "-P", "5037"])
+        self.assertEqual(argv, [str(self.adb), "-P", "5037", "devices", "-l"])
+        self.assertNotIn("-H", argv)
         self.assertFalse(popen.call_args.kwargs["shell"])
-        self.assertNotIn("ADB_SERVER_SOCKET", popen.call_args.kwargs["env"])
+        for name in ("ADB_SERVER_SOCKET", "ANDROID_ADB_SERVER_ADDRESS", "ANDROID_ADB_SERVER_PORT"):
+            self.assertNotIn(name, popen.call_args.kwargs["env"])
         with patch.object(android, "MAX_OUTPUT_BYTES", 8), patch.object(android.subprocess, "Popen", return_value=FakeProcess(stdout=b"x" * 9)):
             runner = android.AdbRunner(self.adb)
             with self.assertRaisesRegex(android.CommandLimitError, "2 MiB"):

@@ -211,7 +211,10 @@ class AdbRunner:
         env = os.environ.copy()
         for name in ("ADB_SERVER_SOCKET", "ANDROID_ADB_SERVER_ADDRESS", "ANDROID_ADB_SERVER_PORT"):
             env.pop(name, None)
-        argv = [str(self.executable), "-H", "127.0.0.1", "-P", "5037", *arguments]
+        # An explicit -H makes ADB treat even loopback as a remote server and
+        # prevents local automatic startup. Cleared host overrides keep the
+        # default server local while -P fixes its port.
+        argv = [str(self.executable), "-P", "5037", *arguments]
         try:
             process = subprocess.Popen(argv, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                                        stderr=subprocess.PIPE, shell=False, env=env)
@@ -414,7 +417,7 @@ def inventory_resources(output: Path, adb: Path | None = None, serial: str | Non
         "package": PACKAGE, "serial": selected, "android_sdk": sdk_number,
         "installed_apk_count": len(apk_lines),
         "adb": {"executable": str(executable), "version": diagnostic(b"\n".join(version.stdout.splitlines()[:2])),
-                "server": "127.0.0.1:5037"},
+                "server": "localhost:5037"},
         "scope": {"contents_read": False, "root_elevation_requested": False,
                   "regular_files_only": True, "follows_directory_symlinks": False,
                   "max_depth": MAX_DEPTH, "max_files": MAX_FILES,

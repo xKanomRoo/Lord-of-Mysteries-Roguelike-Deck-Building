@@ -198,7 +198,9 @@ class ExportAdbRunner:
         env = os.environ.copy()
         for name in ("ADB_SERVER_SOCKET", "ANDROID_ADB_SERVER_ADDRESS", "ANDROID_ADB_SERVER_PORT"):
             env.pop(name, None)
-        argv = [str(self.executable), "-H", "127.0.0.1", "-P", "5037", *arguments]
+        # -H disables local automatic startup even with a loopback value.
+        # Cleared host overrides preserve ADB's default local server.
+        argv = [str(self.executable), "-P", "5037", *arguments]
         try:
             process = subprocess.Popen(argv, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                                        stderr=subprocess.PIPE, shell=False, env=env)

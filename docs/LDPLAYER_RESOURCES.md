@@ -199,17 +199,17 @@ error นี้เกิดตอน ADB เรียก Android shell ไม่
 
 ```powershell
 $ldAdbPath = "D:\LDPlayer\LDPlayer14\adb.exe"
-& $ldAdbPath -H 127.0.0.1 -P 5037 kill-server
-& $ldAdbPath -H 127.0.0.1 -P 5037 start-server
-& $ldAdbPath -H 127.0.0.1 -P 5037 devices -l
+& $ldAdbPath -P 5037 kill-server
+& $ldAdbPath -P 5037 start-server
+& $ldAdbPath -P 5037 devices -l
 ```
 
 การ reset server ตัด ADB sessions ชั่วคราว จากรายการ devices เลือก serial
 จริงที่มี status `device` หากแสดง `emulator-5554 device` ใช้:
 
 ```powershell
-& $ldAdbPath -H 127.0.0.1 -P 5037 -s "emulator-5554" shell echo adb-ok
-& $ldAdbPath -H 127.0.0.1 -P 5037 -s "emulator-5554" shell pm path com.smilegate.chaoszero.stove.google
+& $ldAdbPath -P 5037 -s "emulator-5554" shell echo adb-ok
+& $ldAdbPath -P 5037 -s "emulator-5554" shell pm path com.smilegate.chaoszero.stove.google
 ```
 
 ถ้า serial ต่างให้แทนค่าตามรายการจริง ทดสอบ echo ก่อน package query
@@ -217,3 +217,20 @@ $ldAdbPath = "D:\LDPlayer\LDPlayer14\adb.exe"
 และ export ตามขั้นก่อนหน้า ถ้า echo ยัง `error: closed` ให้ส่ง output ของ
 devices และ echo probe ยังไม่แก้ schema/package หรือเปลี่ยน resource paths
 เพราะปัญหาอยู่ก่อนขั้นตรวจไฟล์ Tool ไม่ทำ restart/retry ให้โดยอัตโนมัติ
+
+### cannot start server on remote host / connection refused 10061
+
+คำสั่งเดิมที่ใส่ `-H 127.0.0.1` ทำให้ ADB ใช้ semantics ของ remote server
+แม้ host จะเป็น loopback เมื่อไม่มี server ฟังพอร์ต 5037 จึงไม่ auto-start และ
+ได้ `cannot start server on remote host` ให้เริ่ม server ด้วย local default host:
+
+```powershell
+$ldAdbPath = "D:\LDPlayer\LDPlayer14\adb.exe"
+& $ldAdbPath -P 5037 start-server
+& $ldAdbPath -P 5037 devices -l
+```
+
+เมื่อมี emulator serial status `device` จึงใช้ echo probe ข้างต้น ไม่ระบุ `-H`
+helpers รุ่นปัจจุบันใช้ local default host/พอร์ต 5037 และล้าง remote ADB server
+environment overrides เฉพาะ child process เพื่อให้ client auto-start local ADB
+ได้ การแก้ startup ไม่ได้ยืนยันว่า shell error: closed ก่อนหน้านี้หายแล้ว
