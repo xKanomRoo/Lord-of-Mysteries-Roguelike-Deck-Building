@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.local/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+research/raw/
+research/generated/
+*.apk
+*.xapk
+*.apks
+*.part[0-9]*
