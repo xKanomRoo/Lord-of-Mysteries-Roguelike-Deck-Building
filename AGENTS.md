@@ -27,7 +27,15 @@ not create a Git worktree unless the user explicitly requests one.
   static inspection; pack output is ignored and never imported into the product.
 - `tools/read_research_pack.py`: verifies every packed member before unpacking.
 - `tools/extract_nested_apk.py`: report-verified outer APK selection capped at 30 MiB;
-  read docs/NEXT_APK_STEP.md for the pending native-reader research stage.
+  read docs/NEXT_APK_STEP.md for source lineage and native-reader results.
+- `tools/inspect_native_apk.py`: bounded ARM64 ELF inventory with source hashes;
+  never loads or executes uploaded libraries.
+- `tools/read_plpck.py`: bounded ordinary PLPcK container index; cached V8 payloads
+  are not plaintext JavaScript or a gameplay specification.
+- `tools/fetch_game_entry.py`: one fixed, source-verified public entry GET with
+  verified TLS and bounded response storage; read docs/SERVER_RESOURCES.md.
+- `tools/inventory_android_resources.py`: local ADB file inventory for the fixed
+  game package, without pulling contents or changing emulator settings.
 - `tools/decode_csb.py`: bounded documented Cocos Studio scene subset with offsets.
 - `tools/render_csb_wireframe.py`: approximate serialized layout diagrams, not runtime screenshots.
 - `tools/decode_texture.py`: bounded SCT/SCSP inspection and SCT1 PNG decoding.
@@ -41,8 +49,10 @@ not create a Git worktree unless the user explicitly requests one.
   inventories all 11 nested APKs (1,417 entries); the received bootstrap pack has
   162 hash-verified members. Read docs/research/CHAOS_BOOTSTRAP_ANALYSIS.md.
   All 18 CSB scenes were decoded to a documented subset (474 hierarchy nodes,
-  469 WidgetOptions; five custom TileSprite nodes unsupported). Cocos Studio
-  serialization and Cocos-related bootstrap APIs are observed. The exact complete
+  474 WidgetOptions, including five source-verified vendor TileSprite nodes).
+  The supplied native APK has ten hash-verified ARM64 libraries. Returned engine
+  labels are cocos2d-x-4.0 and V8 12.4.254.21; read
+  docs/research/CHAOS_NATIVE_ANALYSIS.md. The exact complete
   engine version, combat UI and game rules remain unknown. Never describe
   prototype rules as recovered Chaos Zero Nightmare rules.
 - Layout coordinates are serialized local values. Runtime constraints, clipping,
@@ -59,9 +69,14 @@ not create a Git worktree unless the user explicitly requests one.
 - Research packs may hold selected reference assets for private static inspection;
   keep those packs ignored and never execute their scripts or compiled payloads.
 - The user has requested research on downloading game resources from the server.
-  Read docs/SERVER_RESOURCES.md: patch hooks are observed, but no verified public
-  CDN/manifest URL has been found. Only investigate documented resource endpoints
+  Read docs/SERVER_RESOURCES.md: a source-verified entry/config endpoint is known,
+  but its cloud request failed at proxy CONNECT before an upstream response.
+  No verified asset CDN/manifest URL has been found. Only investigate resource endpoints
   within the user's access; do not guess private APIs or bypass authentication.
+- The user now has the official client in their own Windows LDPlayer. Read
+  docs/LDPLAYER_RESOURCES.md. The cloud cannot access that local emulator. Inventory
+  accessible resource paths first; private storage may deny ADB access. Never
+  include account databases, preferences or tokens in a resource export.
 - Use original placeholder art and text for the playable demo. Import reference
   assets into the product only when the user has supplied appropriate permission.
 - Retrieve bounded source passages rather than putting entire novels into prompts.

@@ -60,12 +60,14 @@ python tools/analyze_apk.py /path/to/reference.xapk \
 เมื่อมีรายงานแล้ว ใช้ [research pack](docs/RESEARCH_PACK.md) รวมเฉพาะ bootstrap
 resources ให้เล็กกว่า 30 MiB พร้อม source hashes เพื่อส่งมาตรวจต่อโดยไม่ส่งทั้งเกม
 
-ขั้นวิจัยถัดไปสำหรับ card/battle data: [แยก native APK 21.92 MiB](docs/NEXT_APK_STEP.md)
-เพื่อตรวจ reader ของ custom containers ก่อนเลือก blobs ใหญ่ Native APK ยังไม่ได้รับ
-จึงยังไม่มีผล decode gameplay จาก library
+ได้รับ native APK 21.92 MiB แล้ว ตรวจ libraries 10 ไฟล์ อ่าน PLPcK bootstrap
+และ schema ของ TileSprite เพิ่มได้ แต่ยังไม่พบข้อมูลการ์ด/ฉากต่อสู้ที่ยืนยันได้
+ดู [ผลตรวจ native](docs/research/CHAOS_NATIVE_ANALYSIS.md)
 
-ถ้า resources ถูกโหลดภายหลัง ดู [ทางเลือกดึงไฟล์จาก patch/CDN หรือ client](docs/SERVER_RESOURCES.md)
-ตอนนี้พบ patch hooks ใน bootstrap แต่ยังไม่มี endpoint ที่ยืนยันสำหรับดาวน์โหลด
+**ขั้นถัดไปเมื่อเกมอยู่ใน LDPlayer:** [ตรวจ resource ที่ดาวน์โหลดไว้](docs/LDPLAYER_RESOURCES.md)
+เครื่องมือใช้ ADB บน Windows อ่านรายการชื่อ/ขนาดไฟล์ก่อนเลือกส่งมาตรวจ
+อีกทางคือ [entry/config request](docs/SERVER_RESOURCES.md): ยืนยัน endpoint จาก
+native แล้ว แต่ request ในคลาวด์ถูก proxy ปฏิเสธก่อนถึงเกมเซิร์ฟเวอร์
 
 ## ให้ Codex ใช้ lore แบบออฟไลน์
 

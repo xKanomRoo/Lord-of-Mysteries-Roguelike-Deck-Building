@@ -31,6 +31,43 @@ SCHEMA_REFERENCE = {
     "node_reader_sha256": "ea69376ef72ca96e5e5a99fdaf1036b8dfcf902da720d7a8db47488fdf4f6e45",
 }
 
+# This custom schema is not part of the official Cocos generated header above.
+# It was recovered statically from the exact supplied native reference library.
+# Default recognition is restricted to the verified CSBs containing this class.
+VENDOR_SCHEMA_ID = "chaos-zero-1.0.811"
+VENDOR_CSB_SHA256S = frozenset({
+    "5edcfb6f78042745e6f65e88f2461493c88f203d3d45f9bb79855a79cb63a0d7",
+    "349c9be7a9a036dd56ec7ac0576e6cf4b5ac58b82f3f90147a18dc1c11c1263e",
+})
+VENDOR_SCHEMA_REFERENCE = {
+    "schema_id": VENDOR_SCHEMA_ID,
+    "format": "Vendor TileSpriteOptions extension; static native evidence",
+    "scope": "Validated for the supplied Chaos Zero Nightmare 1.0.811 reference library and CSBs only",
+    "evidence_path": "Chaos+Zero+Nightmare_1.0.811_APKPure.xapk!config.arm64_v8a.apk!lib/arm64-v8a/libssr.so",
+    "library_sha256": "a790283a8f283b767425feaab8281281c46b352a93c02da79f3baaf6065f04b0",
+    "factory": {"symbol": "flatbuffers::CreateTileSpriteOptions", "virtual_address": "0x22129a4", "bytes": 676},
+    "reader": {"symbol": "cocostudio::TileSpriteReader::setPropsWithFlatBuffers",
+               "virtual_address": "0x2212c50", "bytes": 1748},
+    "xml_reader": {"symbol": "cocostudio::TileSpriteReader::createOptionsWithFlatBuffers",
+                   "virtual_address": "0x2211d9c", "bytes": 2804},
+    "fields": [
+        {"index": 0, "vtable_selector": 4, "name": "widgetOptions", "type": "uoffset<WidgetOptions>",
+         "proof_virtual_addresses": ["0x2212ca4", "0x2212ccc"]},
+        {"index": 1, "vtable_selector": 6, "name": "tilingX", "type": "float32", "default": 0.0,
+         "proof_virtual_addresses": ["0x2211f70", "0x2212650", "0x2212bdc"]},
+        {"index": 2, "vtable_selector": 8, "name": "tilingY", "type": "float32", "default": 0.0,
+         "proof_virtual_addresses": ["0x2211fb0", "0x2212654", "0x2212b5c"]},
+        {"index": 3, "vtable_selector": 10, "name": "offsetX", "type": "float32", "default": 0.0,
+         "proof_virtual_addresses": ["0x2211ff0", "0x221265c", "0x2212ac8"]},
+        {"index": 4, "vtable_selector": 12, "name": "offsetY", "type": "float32", "default": 0.0,
+         "proof_virtual_addresses": ["0x2212034", "0x2212660", "0x2212a38"]},
+        {"index": 5, "vtable_selector": 14, "name": "fileData", "type": "uoffset<ResourceData>",
+         "name_status": "analysis label aligned with XML FileData tag; exact generated member name unverified",
+         "proof_virtual_addresses": ["0x22129d4", "0x22129f0", "0x2212ce4"]},
+    ],
+    "limitations": "Serialized fields only; no tile rendering, runtime layout or repeat semantics are reconstructed",
+}
+
 
 class DecodeError(ValueError):
     """Malformed, unsupported or oversized static research input."""
@@ -220,10 +257,24 @@ def decode_resource(table):
             "resourceType": table.scalar(2, "i", 0), "evidence": table.evidence()}
 
 
-def decode_options(data, classname):
+def decode_options(data, classname, vendor_schema=None):
     result = {"evidence": data.evidence()}
     if classname == "Node":
         result.update({"schema": "WidgetOptions", "widget": decode_widget(data)})
+        return result
+    if classname == "TileSprite" and vendor_schema == VENDOR_SCHEMA_ID:
+        widget = data.child_table(0)
+        resource = data.child_table(5)
+        result.update({"schema": "TileSpriteOptions", "status": "decoded_vendor_schema",
+                       "schema_reference_id": VENDOR_SCHEMA_ID,
+                       "widget": decode_widget(widget) if widget else None,
+                       "resources": {"fileData": decode_resource(resource)} if resource else {},
+                       "strings": {},
+                       "scope": "Serialized vendor options from the documented reference library; rendering not reconstructed"})
+        for index, name in ((1, "tilingX"), (2, "tilingY"), (3, "offsetX"), (4, "offsetY")):
+            result[name] = data.scalar(index, "f", 0.0)
+        if len(data.field_offsets) > 6:
+            result["unknown_additional_field_indices"] = list(range(6, len(data.field_offsets)))
         return result
     if classname not in KNOWN_WRAPPERS:
         result.update({"status": "unsupported_custom_class", "widget": None,
@@ -248,8 +299,17 @@ def decode_options(data, classname):
     return result
 
 
-def decode_scene(data, *, source=None, limits=None):
+def decode_scene(data, *, source=None, limits=None, vendor_schema=None):
     reader = Reader(data, limits)
+    digest = hashlib.sha256(data).hexdigest()
+    if vendor_schema not in (None, VENDOR_SCHEMA_ID):
+        raise DecodeError("Unknown vendor schema")
+    vendor_mode = None
+    if vendor_schema:
+        vendor_mode = "explicit_interpretation: applicability to this file requires independent verification"
+    elif digest in VENDOR_CSB_SHA256S:
+        vendor_schema = VENDOR_SCHEMA_ID
+        vendor_mode = "exact_verified_reference_csb_sha256"
     root = reader.table(reader.reference(0))
     if len(root.field_offsets) < 4:
         raise DecodeError("Missing CSParseBinary root fields")
@@ -279,7 +339,7 @@ def decode_scene(data, *, source=None, limits=None):
         node = {"id": index, "parent_id": parent, "depth": depth,
                 "classname": classname, "customClassName": table.string(3),
                 "evidence": table.evidence(), "options_wrapper": wrapper.evidence() if wrapper else None,
-                "options": decode_options(options, classname) if options else None,
+                "options": decode_options(options, classname, vendor_schema) if options else None,
                 "child_ids": []}
         nodes.append(node)
         children = table.reference(1)
@@ -297,20 +357,24 @@ def decode_scene(data, *, source=None, limits=None):
     animations = root.reference(5)
     animation_tables = [reader.table(ref).evidence() for ref in reader.vector_refs(animations)] if animations else []
     return {
-        "source": source or {"bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()},
+        "source": source or {"bytes": len(data), "sha256": digest},
         "status": "decoded_documented_subset", "serialized_version": version,
         "decoded_string_bytes": reader.decoded_string_bytes,
         "root_evidence": root.evidence(), **textures, "node_count": len(nodes),
         "class_counts": dict(sorted(Counter(node["classname"] for node in nodes).items())),
         "unsupported_class_counts": dict(sorted(Counter(node["classname"] for node in nodes
-                                                        if node["classname"] != "Node"
-                                                        and node["classname"] not in KNOWN_WRAPPERS).items())),
+                                                        if node.get("options", {})
+                                                        and node["options"].get("status") == "unsupported_custom_class").items())),
+        "vendor_schema_node_count": sum(node.get("options") is not None and
+                                        node["options"].get("status") == "decoded_vendor_schema" for node in nodes),
+        "vendor_schema_reference": VENDOR_SCHEMA_REFERENCE if vendor_schema else None,
+        "vendor_schema_selection": vendor_mode,
         "action": {"status": "not_decoded", "evidence": action.evidence() if action else None},
         "animationList": {"status": "not_decoded", "table_evidence": animation_tables},
         "nodes": nodes,
         "limitations": ["Partial schema decoding does not fully verify every field or identify the complete game engine.",
                         "Coordinates are serialized local values; runtime scripts, anchors, constraints and animation can change display.",
-                        "Custom classes, detailed layout constraints, animations, clipping and unspecified options are not interpreted.",
+                        "Other custom classes, detailed layout constraints, animations, clipping and unspecified options are not interpreted.",
                         "Text and texture references do not prove final localization, asset availability or gameplay rules."],
     }
 
@@ -325,7 +389,7 @@ def read_bounded(path, limit):
     return data
 
 
-def decode_pack(index_path, limits=None):
+def decode_pack(index_path, limits=None, *, vendor_schema=None):
     limits = limits or Limits()
     index_path = Path(index_path)
     raw = read_bounded(index_path, limits.max_index_bytes)
@@ -377,7 +441,7 @@ def decode_pack(index_path, limits=None):
                                                  "stored_path", "stored_sha256", "transformation")}
         source["bytes"] = len(data)
         try:
-            scene = decode_scene(data, source=source, limits=limits)
+            scene = decode_scene(data, source=source, limits=limits, vendor_schema=vendor_schema)
         except DecodeError as error:
             scenes.append({"source": source, "status": "decode_failed", "error": str(error)})
             continue
@@ -389,10 +453,13 @@ def decode_pack(index_path, limits=None):
             raise DecodeError("CSB pack exceeds aggregate decoded string byte limit")
         scenes.append(scene)
     return {"schema_version": 1, "schema_reference": SCHEMA_REFERENCE,
+            "vendor_schema_reference": VENDOR_SCHEMA_REFERENCE if any(scene.get("vendor_schema_node_count") for scene in scenes) else None,
             "pack_index_sha256": hashlib.sha256(raw).hexdigest(),
             "pack_input": pack.get("input"), "scene_count": len(scenes),
             "decoded_scene_count": sum(scene["status"] == "decoded_documented_subset" for scene in scenes),
-            "total_node_count": sum(scene.get("node_count", 0) for scene in scenes), "scenes": scenes}
+            "total_node_count": sum(scene.get("node_count", 0) for scene in scenes),
+            "total_vendor_schema_node_count": sum(scene.get("vendor_schema_node_count", 0) for scene in scenes),
+            "scenes": scenes}
 
 
 def summary(report):
@@ -406,6 +473,12 @@ def summary(report):
                      f"{json.dumps(scene.get('unsupported_class_counts', {}), ensure_ascii=True)} |")
     lines.extend(["", "Schema reference: " + SCHEMA_REFERENCE["url"],
                   "", "Raw text, references and hierarchy JSON should remain in ignored local research storage."])
+    if report.get("total_vendor_schema_node_count"):
+        lines.extend(["", f"Vendor TileSprite nodes decoded: {report['total_vendor_schema_node_count']}.",
+                      "Vendor schema scope: supplied Chaos Zero Nightmare 1.0.811 native library and verified reference CSBs.",
+                      "Native evidence: " + VENDOR_SCHEMA_REFERENCE["evidence_path"],
+                      "Native SHA-256: " + VENDOR_SCHEMA_REFERENCE["library_sha256"],
+                      "Factory VA 0x22129a4; reader VA 0x2212c50. Serialized options only; tile rendering is not reconstructed."])
     return "\n".join(lines) + "\n"
 
 
@@ -413,11 +486,13 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--pack-index", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path, help="New ignored research output directory")
+    parser.add_argument("--vendor-schema", choices=[VENDOR_SCHEMA_ID],
+                        help="Explicit schema interpretation for additional vendor files; known reference CSB hashes are recognized automatically")
     args = parser.parse_args(argv)
     try:
         if args.output.exists():
             raise DecodeError("Output directory already exists; choose a new output path")
-        report = decode_pack(args.pack_index)
+        report = decode_pack(args.pack_index, vendor_schema=args.vendor_schema)
         args.output.mkdir(parents=True, exist_ok=False)
         (args.output / "layouts.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         (args.output / "summary.md").write_text(summary(report), encoding="utf-8")

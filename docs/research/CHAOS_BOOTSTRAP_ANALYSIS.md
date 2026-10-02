@@ -12,14 +12,14 @@ data ไม่ใช่คำสั่งให้ Codex ทำงาน
 | Build identity | package `com.smilegate.chaoszero.stove.google`, versionName `1.0.811`, versionCode `171008110` | ไม่ยืนยันว่าเป็น release ล่าสุด |
 | Android UI orientation | launcher `kr.supercreative.ssr.SuperActivity`, sensorLandscape; min SDK 24, target SDK 36 | ไม่ยืนยัน viewport จริงของทุกอุปกรณ์ |
 | Scene format | Cocos Studio CSParseBinary / FlatBuffers subset อ่าน 18/18 scenes | ไม่ใช่หลักฐาน exact engine version |
-| Scene hierarchy | 474 nodes; 469 standard WidgetOptions, 5 custom `TileSprite` ไม่ถอด options | layout constraints และ animation ยังไม่ถอด |
+| Scene hierarchy | 474 nodes / WidgetOptions; รวม vendor `TileSprite` 5 จาก native reader ที่ได้รับภายหลัง | properties อ่านบางส่วน; layout constraints และ animation ยังไม่ถอด |
 | Serialized canvas | 16 scene roots 1280×720; list_authority 784×82; list_server 800×90 | logical canvas ไม่ใช่ screenshot resolution |
 | SCT textures | ถอด PNG ครบ 108: SCT1 2, SCT2 106; CRC/length/LZ4 ผ่าน | เป็น resource images/atlases ไม่ใช่ final runtime screens |
 | SCSP | 7 files: LZ4 และ section bounds ผ่าน; 6 มี `3.8.79.scsp`, 1 มี `2.1.27.scsp` | ยังไม่อ่าน animation/skeleton schema ครบ |
 | `progress.json` | Lottie 5.6.5, 38×10, 30 fps, frames 0..48 | animation โหลดประมาณ 1.6 วินาที ไม่ใช่ gameplay progression |
 | `assets/info.txt` | Singular SDK 12.10.0 metadata | ไม่ใช่เวอร์ชัน game engine |
-| `init.jbin` | binary เริ่ม `PLPcK`; มี `cocos`, `CSLoader`, `TitleScenePre`, `_start_title_scene`, `spine` | custom container ยังไม่ถอด code; ไม่ execute |
-| sdata ตัวอย่าง | 7 small files รวม original bytes 100,002 | ยังไม่ทราบ schema; entropy สูงไม่พิสูจน์ encryption |
+| `init.jbin` | PLPcK container ตรวจ 26 records; 25 V8 cached-data payloads | index อ่านได้ แต่ไม่ได้ถอด JS/gameplay หรือ execute |
+| sdata ตัวอย่าง | 7 small files รวม original bytes 100,002; RH01 wrapper จาก libGvt; original RSA signatures ผ่าน 7/7 | SDK text configs 6, inner binary 1 ยังไม่ทราบ schema; ไม่มี card/battle definitions ที่ยืนยันได้ |
 
 เครื่องมือ inventory เดิมไม่พบ engine hint ที่รองรับ แต่ผลตรวจ bytes รอบนี้มีหลักฐาน
 Cocos Studio และ Cocos-related APIs เพิ่มขึ้น ภาพ SCT1 ของ `logo_yuna` มีคำว่า
@@ -124,11 +124,11 @@ binary scenes/textures ไม่ถูกแปลง และ hash ตรง�
 
 แพ็กนี้ไม่มี decoded battle scene, card definitions, combat rules หรือ canon LoTM/CoI
 inventory ระบุ sdata ทั้งหมด 15 files รวม 52,360,002 bytes แต่ได้รับเพียง 7 files
-ขนาดเล็ก ขั้นวิจัยถัดไปคือระบุ container/schema ของ sdata และ init.jbin ก่อนขอข้อมูล
-เพิ่มแบบมีเป้าหมาย ไม่สรุปว่าเนื้อหาที่ขาดต้องอยู่ใน blobs หรือ server แน่นอน
+ขนาดเล็ก ผล native ภายหลังอ่าน PLPcK และ RH01 wrapper ของตัวอย่างชุดนี้ได้แล้ว
+แต่ยังไม่พบ gameplay schema ไม่สรุปว่าเนื้อหาที่ขาดต้องอยู่ใน blobs หรือ server แน่นอน
 ยังไม่สามารถสร้างหน้าจอเกมต่อสู้ที่ตรงต้นฉบับจากหลักฐานชุดนี้
 
-ตรวจ static เพิ่มจากตัวอย่าง sdata เดิมพบ common trailer 518 bytes ตามรายละเอียด
-ใน [ขั้นตรวจ native reader](../NEXT_APK_STEP.md) จึงเลือกขอ ARM64 config APK
-21.92 MiB ซึ่งมี libraries ที่ใช้ตรวจ reader ได้ต่อ ก่อนขอ sdata ใหญ่ทั้งชุด
-ยังไม่ได้รับ native APK และยังไม่ยืนยันบทบาท loader ของ library ใด
+การตรวจแรกเห็น ASCII trailer 518 bytes; native ที่ได้รับภายหลังยืนยันว่ามันเป็น
+ส่วนหนึ่งของ footer RH01 ขนาด 798 bytes ดู [ผล native](CHAOS_NATIVE_ANALYSIS.md)
+ตอนนี้ผู้ใช้มีเกมใน LDPlayer จึงตรวจ [รายการ resource ใน emulator](../LDPLAYER_RESOURCES.md)
+ก่อนเลือกข้อมูลเพิ่ม ไม่ต้องส่ง APK เดิมซ้ำ

@@ -9,7 +9,8 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from tools.decode_csb import DecodeError, Limits, Reader, decode_pack, decode_scene, main
+from tools.decode_csb import (DecodeError, Limits, Reader, VENDOR_SCHEMA_ID,
+                              VENDOR_SCHEMA_REFERENCE, decode_pack, decode_scene, main)
 
 
 class FixtureBuilder:
@@ -55,7 +56,7 @@ class FixtureBuilder:
         struct.pack_into("<I", self.data, source, target - source)
 
 
-def make_scene(classname="Node", child_count=0):
+def make_scene(classname="Node", child_count=0, *, vendor_values=None, vendor_resource=False):
     builder = FixtureBuilder()
     root, root_fields = builder.table({0: b"\0" * 4, 3: b"\0" * 4}, 6)
     builder.reference(0, root)
@@ -69,20 +70,32 @@ def make_scene(classname="Node", child_count=0):
     builder.reference(tree_fields[2], wrapper)
     option_fields = None
     if classname != "Node":
-        options, option_fields = builder.table({0: b"\0" * 4})
+        payloads = {0: b"\0" * 4}
+        if vendor_values is not None:
+            payloads.update({index: struct.pack("<f", value) for index, value in vendor_values.items()})
+        if vendor_resource:
+            payloads[5] = b"\0" * 4
+        options, option_fields = builder.table(payloads)
         builder.reference(wrapper_fields[0], options)
     widget, fields = builder.table({0: b"\0" * 4, 7: struct.pack("<ff", 150, 250),
                                     8: struct.pack("<ff", 1, 1), 9: struct.pack("<ff", .5, .5),
                                     11: struct.pack("<ff", 1280, 720), 15: b"\x01"}, 21)
     builder.reference(option_fields[0] if option_fields else wrapper_fields[0], widget)
     builder.reference(fields[0], builder.string("synthetic-root"))
+    resource = None
+    if vendor_resource:
+        resource, resource_fields = builder.table({0: b"\0" * 4, 1: b"\0" * 4, 2: struct.pack("<i", 1)})
+        builder.reference(option_fields[5], resource)
+        builder.reference(resource_fields[0], builder.string("synthetic/pattern.png"))
+        builder.reference(resource_fields[1], builder.string("synthetic/atlas.plist"))
     for number in range(child_count):
         child, child_fields = builder.table({0: b"\0" * 4}, 4)
         builder.reference(children + 4 + number * 4, child)
         builder.reference(child_fields[0], builder.string("SingleNode"))
     return builder, {"root": root, "root_fields": root_fields, "tree": tree,
                      "tree_fields": tree_fields, "widget": widget, "fields": fields,
-                     "children": children}
+                     "children": children, "options": options if option_fields else None,
+                     "option_fields": option_fields, "resource": resource}
 
 
 class CsbTests(unittest.TestCase):
@@ -113,6 +126,57 @@ class CsbTests(unittest.TestCase):
         options = scene["nodes"][0]["options"]
         self.assertIsNone(options["widget"])
         self.assertEqual(options["status"], "unsupported_custom_class")
+
+    def test_vendor_tile_schema_defaults_and_unverified_files_stay_unknown(self):
+        builder, _ = make_scene("TileSprite")
+        plain = decode_scene(bytes(builder.data))
+        self.assertEqual(plain["unsupported_class_counts"], {"TileSprite": 1})
+        self.assertIsNone(plain["nodes"][0]["options"]["widget"])
+        # Claimed metadata cannot enable the version-specific native schema.
+        spoofed = decode_scene(bytes(builder.data), source={"stored_sha256":
+            "5edcfb6f78042745e6f65e88f2461493c88f203d3d45f9bb79855a79cb63a0d7"})
+        self.assertEqual(spoofed["unsupported_class_counts"], {"TileSprite": 1})
+        scene = decode_scene(bytes(builder.data), vendor_schema=VENDOR_SCHEMA_ID)
+        options = scene["nodes"][0]["options"]
+        self.assertEqual(options["schema"], "TileSpriteOptions")
+        self.assertEqual(options["status"], "decoded_vendor_schema")
+        self.assertEqual(options["widget"]["name"], "synthetic-root")
+        self.assertEqual(options["widget"]["position"], {"x": 150, "y": 250})
+        self.assertEqual([options[name] for name in ("tilingX", "tilingY", "offsetX", "offsetY")], [0.0] * 4)
+        self.assertEqual(options["resources"], {})
+        self.assertEqual(scene["vendor_schema_node_count"], 1)
+        self.assertEqual(scene["unsupported_class_counts"], {})
+        self.assertEqual(scene["vendor_schema_reference"], VENDOR_SCHEMA_REFERENCE)
+        self.assertIn("explicit_interpretation", scene["vendor_schema_selection"])
+
+    def test_vendor_tile_float_fields_and_resource_reference_are_distinct(self):
+        builder, locations = make_scene("TileSprite", vendor_values={1: 2.5, 2: 3.25, 3: -10, 4: 17},
+                                        vendor_resource=True)
+        options = decode_scene(bytes(builder.data), vendor_schema=VENDOR_SCHEMA_ID)["nodes"][0]["options"]
+        self.assertEqual([options[name] for name in ("tilingX", "tilingY", "offsetX", "offsetY")], [2.5, 3.25, -10, 17])
+        self.assertEqual(options["evidence"]["table_offset"], locations["options"])
+        self.assertEqual(options["resources"]["fileData"]["path"], "synthetic/pattern.png")
+        self.assertEqual(options["resources"]["fileData"]["plistFile"], "synthetic/atlas.plist")
+        self.assertEqual(options["resources"]["fileData"]["resourceType"], 1)
+        self.assertEqual(options["resources"]["fileData"]["evidence"]["table_offset"], locations["resource"])
+
+    def test_vendor_tile_float_field_width_and_nonfinite_values_rejected(self):
+        builder, locations = make_scene("TileSprite", vendor_values={1: 1.0})
+        invalid = bytearray(builder.data)
+        struct.pack_into("<f", invalid, locations["option_fields"][1], float("inf"))
+        with self.assertRaisesRegex(DecodeError, "Non-finite"):
+            decode_scene(bytes(invalid), vendor_schema=VENDOR_SCHEMA_ID)
+        invalid = bytearray(builder.data)
+        start = locations["options"]
+        vtable = start - struct.unpack_from("<i", invalid, start)[0]
+        size = struct.unpack_from("<H", invalid, vtable + 2)[0]
+        struct.pack_into("<H", invalid, vtable + 4 + 1 * 2, size - 1)
+        with self.assertRaisesRegex(DecodeError, "extends beyond"):
+            decode_scene(bytes(invalid), vendor_schema=VENDOR_SCHEMA_ID)
+        builder, locations = make_scene("TileSprite", vendor_resource=True)
+        struct.pack_into("<I", builder.data, locations["option_fields"][5], 0xffffffff)
+        with self.assertRaisesRegex(DecodeError, "bounds"):
+            decode_scene(bytes(builder.data), vendor_schema=VENDOR_SCHEMA_ID)
 
     def test_all_truncations_rejected(self):
         builder, _ = make_scene()

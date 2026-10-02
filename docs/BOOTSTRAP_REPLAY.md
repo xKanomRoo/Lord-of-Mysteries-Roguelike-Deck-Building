@@ -38,6 +38,9 @@ py .\tools\decode_csb.py --pack-index ".local/chaos-bootstrap-read/pack-index.js
 ```
 
 ผลที่คาด: decoded scenes 18/18 และ nodes 474; อ่าน details ใน `layouts.json`
+decoder ปัจจุบันอ่าน WidgetOptions ได้ 474 รวม TileSprite 5 nodes ของแพ็กที่
+ตรวจ native แล้ว การใช้ vendor schema อัตโนมัติผูกกับ hash ของ CSB จริงสองไฟล์
+ยังไม่ใช่การถอด animation หรือ runtime layout ครบ
 
 ## 4. สร้างและเปิดภาพ
 

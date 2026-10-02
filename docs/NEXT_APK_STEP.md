@@ -1,5 +1,10 @@
 # ขั้นถัดไป: ตรวจ native reader ของเกม
 
+**ขั้นนี้ทำแล้ว:** ได้รับ native APK และตรวจ libraries 10 ไฟล์ตาม hash ที่คาด
+อ่าน [ผล native](research/CHAOS_NATIVE_ANALYSIS.md) ได้เลย ไม่ต้องแยกหรือส่งซ้ำ
+ขั้นถัดไปตอนนี้คือ [ตรวจ resource ใน LDPlayer](LDPLAYER_RESOURCES.md)
+คำสั่งด้านล่างเก็บไว้สำหรับทำซ้ำจาก XAPK/report เดิม
+
 ผู้ใช้เลือกวิจัย APK ต่อเพื่อหาข้อมูลการ์ดและฉากต่อสู้ หลังถอด bootstrap UI แล้ว
 เป้าหมายรอบนี้คือหา evidence ว่า client อ่าน `sdata` และ `init.jbin` อย่างไร
 ก่อนเลือกข้อมูลเพิ่มเพื่อถอด gameplay ไม่ได้ยืนยันว่า card rules อยู่ใน native code
@@ -13,11 +18,13 @@
 native libraries บีบอัดอยู่ใน APK นี้ ไม่ต้องส่ง `.so` ที่ขยายแล้วแยก
 ยังไม่สรุปหน้าที่ของ library จากชื่อเพียงอย่างเดียว
 
-ข้อมูลที่มีแล้วเพิ่มเหตุผลให้ตรวจ reader: sdata เล็กทั้ง 7 ไฟล์มีท้ายไฟล์ 518 bytes
+ข้อมูลที่มีในขั้นแรกเพิ่มเหตุผลให้ตรวจ reader: sdata เล็กทั้ง 7 ไฟล์มีท้ายไฟล์ 518 bytes
 ที่ XOR ด้วย `0x76` แล้วอ่านเป็น hexadecimal ได้ 259 bytes เริ่มด้วย `10 00 10`
 ตามด้วย 256 bytes ที่แตกต่างกันในแต่ละไฟล์ ส่วนก่อนท้ายนี้มีขนาด modulo 16 = 8
 นี่เป็น observed container pattern ไม่พิสูจน์ encryption, key, compression หรือ
 card schema จึงไม่ขอ blobs ใหญ่ทั้ง 49.84 MiB ก่อนเข้าใจรูปแบบ
+ผลภายหลังจาก native ยืนยันว่า 518 bytes นี้เป็นส่วนของ footer RH01 798 bytes
+ลายเซ็นต้นฉบับผ่านครบ 7/7 และ payload ที่อ่านได้เป็น SDK configs ไม่ใช่ข้อมูลการ์ด
 
 ## Windows: ทำตามสี่ขั้นนี้
 
@@ -73,7 +80,7 @@ Invoke-Item .\.local\chaos-native
 แนบ **config.arm64_v8a.apk** จากโฟลเดอร์ที่เปิด ไม่ใช่ XAPK ทั้งก้อน
 ไม่ต้องเปิดหรือติดตั้ง APK เพื่อส่งไฟล์
 
-## สิ่งที่จะตรวจเมื่อได้รับ APK นี้
+## ขอบเขตตรวจ native
 
 1. ตรวจ hash เทียบรายงาน แล้วอ่าน ELF architecture, sections และ symbols
 2. ตรวจ references ที่สัมพันธ์กับ `PLPcK`, CSLoader และ container pattern ที่พบ
@@ -83,8 +90,9 @@ Invoke-Item .\.local\chaos-native
    resources หรือยังอ่านไม่ได้ จะรายงานข้อจำกัดแทนการแต่งกฎว่าเป็นของต้นฉบับ
 
 คลาวด์นี้มี `readelf`, `nm`, `objdump`, `strings` และ `file` สำหรับเริ่มตรวจ static
-ยังไม่ได้ติดตั้ง Ghidra/radare2 และยังไม่ได้รับ native APK จริงเพื่อทดสอบเครื่องมือ
-การแยก archive ผ่าน synthetic fixtures; ขนาด/hash ที่คาดข้างต้นมาจากรายงานผู้ใช้
+ใช้ Capstone 5.0.7 และ pyelftools 0.32 ใน isolated `.local/native-venv` ตรวจ
+AArch64 แบบ static เพิ่มแล้ว ไม่ได้ใช้ Ghidra/radare2 ผลกับ APK จริงตรวจ hash,
+CRC และ ELF ได้ครบ 10 libraries; read_plpck ตรวจ bootstrap จริงครบ 26 records
 เก็บ APK, libraries, strings และผลวิเคราะห์ใน `.local/` ไม่ import เข้าเกมหรือ Git
 
 หากข้อมูลไม่ได้อยู่ใน APK อ่าน [การรับ resource หลังติดตั้ง](SERVER_RESOURCES.md)

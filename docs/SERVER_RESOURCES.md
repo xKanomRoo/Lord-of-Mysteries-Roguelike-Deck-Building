@@ -4,6 +4,10 @@
 resource ที่ client ดาวน์โหลด เช่น scenes, textures, localization หรือ client config
 ไม่ใช่การอ้างว่าเข้าถึงฐานข้อมูลผู้เล่นหรือกฎที่ทำงานเฉพาะในเซิร์ฟเวอร์ได้
 
+**ขั้นปัจจุบัน:** ผู้ใช้ติดตั้งเกมใน Windows LDPlayer แล้ว ใช้
+[LDPLAYER_RESOURCES.md](LDPLAYER_RESOURCES.md) ตรวจ resource ที่ client เก็บไว้
+ก่อนเลือก export คลาวด์ไม่สามารถเชื่อมกับ emulator บนเครื่องผู้ใช้โดยตรง
+
 ## หลักฐานที่พบในไฟล์ที่ได้รับ
 
 ตรวจ bounded ASCII/UTF-16 URL candidates จาก bootstrap pack 162 members แล้ว
@@ -27,7 +31,40 @@ resource ที่ client ดาวน์โหลด เช่น scenes, textu
 URL formation, protocol, callback behavior หรือยืนยันว่าทุก hook ถูกใช้ใน build นี้
 URL ที่อ่านได้ใน init เป็น paths ของ policy/legal บน `game.qq.com` และ
 `rule.tencent.com`; store/DTD/metadata URLs ในไฟล์อื่นไม่ได้เป็น game CDN
-ยังไม่ได้ส่ง request ไป game server และไม่ได้ execute APK/scripts/libraries
+การตรวจ bootstrap ขั้นนี้ไม่ได้ execute APK/scripts/libraries
+
+## ผล native และ request ภายหลัง
+
+ได้รับ `config.arm64_v8a.apk` และตรวจ hash ตรงกับรายงานแล้ว Native references
+ใน `libssr.so` ยืนยัน entry/version-config request ดังนี้:
+
+```text
+GET https://live-czn-entry2lx2fz.game.playstove.com:13001/cznlive
+X-App-Id: cznlive
+X-App-NS: ssr-stove-260930
+```
+
+มี query สำหรับ Android, package, build 811 และ buildx ตาม native environment
+ค่า locale ใช้ `en` เป็นสมมติฐาน; device/publisher identifiers เว้นว่าง และไม่ได้
+ส่ง optional permit token เพราะ shipped value ว่าง ดู provenance และข้อจำกัดที่
+[CHAOS_NATIVE_ANALYSIS.md](research/CHAOS_NATIVE_ANALYSIS.md)
+นี่คือ entry/config endpoint ยังไม่ใช่ URL asset CDN ที่ยืนยันแล้ว
+
+ส่ง bounded GET จากคลาวด์หนึ่งครั้งแล้ว: proxy ปฏิเสธ CONNECT ด้วย 403 ก่อน TLS
+หรือ response จาก game server จึงไม่ใช่หลักฐานว่าเกมปฏิเสธบัญชีหรือ URL ผิด
+เพิ่ม hostname ตรงนี้ใน network draft แล้ว; saved draft ไม่ได้ยืนยัน runtime
+propagation และยังไม่มี manifest/asset response ที่ตรวจ hash ได้
+
+เครื่องมือสำหรับตรวจ request บนเครื่องผู้ใช้ (เป็นทางเลือก หากต้องการตรวจ entry):
+
+```powershell
+py .\tools\fetch_game_entry.py ".local/chaos-native/config.arm64_v8a.apk" --output ".local/chaos-entry-v1"
+```
+
+ต้องดาวน์โหลด helper นี้จาก repository รุ่นปัจจุบันก่อน เครื่องมือตรวจ source hash,
+ใช้ endpoint/profile คงที่, TLS ปกติ, timeout 20 วินาที, body ไม่เกิน 1 MiB,
+ไม่ตาม redirects และบันทึก `result.json` เพื่อแยก proxy error กับ upstream status
+response เป็น reference data: ยังไม่ execute หรือแปลว่าได้ gameplay assets
 
 ## ทางเลือกตามชนิดข้อมูล
 
@@ -40,20 +77,20 @@ URL ที่อ่านได้ใน init เป็น paths ของ polic
 
 การไม่มีเว็บไซต์ API ไม่ได้ปิดทางดาวน์โหลด binary ผ่าน HTTPS แต่การเพิ่ม domain
 ใน cloud network settings ไม่ได้สร้าง endpoint, authentication หรือสิทธิ์เข้าถึง
-เอง ในคลาวด์นี้ HTTPS ใช้งานได้บางปลายทาง อุปสรรคตอนนี้คือยังไม่มี patch URL
-และ manifest schema ที่ยืนยัน ไม่ใช่การขาด browser สำหรับดูวิดีโอ
+เอง ในคลาวด์นี้ HTTPS ใช้งานได้บางปลายทาง แต่ entry request ถูก proxy ปฏิเสธ
+และยังไม่มี asset manifest/schema ที่ยืนยัน การมี LDPlayer ช่วยให้ตรวจไฟล์ที่
+แอปทางการดาวน์โหลดไว้แล้วได้โดยไม่ต้องแก้ปัญหา request เส้นทางนี้ก่อน
 
 ## ขั้นที่ทำต่อได้ตอนนี้
 
-ใช้ [NEXT_APK_STEP.md](NEXT_APK_STEP.md) แยกและส่ง `config.arm64_v8a.apk`
-21.92 MiB เครื่องมือใหม่ตรวจ input/report/hash และจำกัด output ไม่เกิน 30 MiB
-เมื่อได้รับจึงอ่าน native libraries เพื่อดู references และส่วนประกอบ URL/reader
-หากพบ endpoint ที่แจก public resource จริง จึงทดลอง bounded HTTPS GET พร้อม
-บันทึก provenance และ verify hashes ตาม manifest ไม่ลองเดา private API paths
+ไม่ต้องส่ง native APK ซ้ำ อ่าน [ผล native](research/CHAOS_NATIVE_ANALYSIS.md)
+แล้วใช้ [LDPlayer inventory](LDPLAYER_RESOURCES.md) เพื่อระบุ resource paths จริง
+ชื่อจาก native เช่น `main.jbin` และ `gameres/manifest.ssra` เป็นเพียง search
+candidates ยังไม่ยืนยัน directory หรือว่ามีไฟล์เหล่านี้บนเครื่องผู้ใช้
 
 ถ้า endpoint/config หาได้เฉพาะตอนรัน จะจัดขั้นตอนให้แอปทางการดาวน์โหลด patch
-บนอุปกรณ์หรือ Android emulator ของผู้ใช้ การเปิดถึงหน้าโหลด resource ไม่ต้อง
-เล่น combat หรือดูวิดีโอ แต่ยังไม่ทราบ directory ของ resource ใน build นี้
+บนอุปกรณ์หรือ Android emulator ของผู้ใช้ ภาพ title ที่ส่งมาแสดงว่าเปิดเกมได้
+แต่ไม่พิสูจน์ว่า resource ทุกหมวดถูกดาวน์โหลดครบ ยังไม่ทราบ directory ในเครื่องนี้
 Android scoped storage/private app data อาจอ่านไม่ได้ด้วย `adb pull` ตามปกติ
 จึงต้องตรวจ storage/access จริงก่อนสอน path หรือสัญญาว่าดึงได้ครบ
 
