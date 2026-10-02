@@ -121,12 +121,22 @@ def select_device(devices: list[dict[str, str]], serial: str | None = None) -> s
     return chosen["serial"]
 
 
+def _adb_filename(name: str) -> bool:
+    if os.name == "nt":
+        return name.lower() == "adb.exe"
+    return name in ("adb", "adb.exe")
+
+
 def _executable(path: Path) -> Path | None:
+    # Test-Path alone also accepts LDPlayer's dnplayer.exe launcher. Reject that
+    # common selection mistake before resolving or ever starting the program.
+    if not _adb_filename(path.name):
+        return None
     try:
         resolved = path.expanduser().resolve(strict=True)
     except (OSError, RuntimeError):
         return None
-    if not resolved.is_file() or _control_text(str(resolved)):
+    if not _adb_filename(resolved.name) or not resolved.is_file() or _control_text(str(resolved)):
         return None
     if os.name == "nt":
         # Avoid Windows batch files, whose invocation can introduce shell parsing.
@@ -138,7 +148,7 @@ def locate_adb(explicit: Path | None = None) -> Path:
     if explicit is not None:
         found = _executable(Path(explicit))
         if found is None:
-            raise InventoryError("--adb must name an existing regular ADB executable (adb.exe on Windows)")
+            raise InventoryError("--adb must name an existing regular ADB executable named adb.exe on Windows or adb/adb.exe elsewhere; dnplayer.exe is the LDPlayer launcher")
         return found
     candidates: list[Path] = []
     on_path = shutil.which("adb")

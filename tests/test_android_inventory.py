@@ -240,6 +240,47 @@ class AndroidInventoryTests(unittest.TestCase):
             with self.assertRaisesRegex(android.InventoryError, "executable"):
                 android.locate_adb(self.adb)
 
+    def test_ldplayer_launcher_is_rejected_before_inventory_commands(self):
+        launcher = self.root / "dnplayer.exe"
+        launcher.write_bytes(b"not executed: synthetic LDPlayer launcher")
+        launcher.chmod(0o700)
+        runner = FakeRunner()
+        with (patch.object(android.subprocess, "Popen") as popen,
+              self.assertRaisesRegex(android.InventoryError, "dnplayer.exe")):
+            android.inventory_resources(self.output, launcher, runner=runner)
+        popen.assert_not_called()
+        self.assertEqual(runner.calls, [])
+        self.assertFalse(self.output.exists())
+
+    def test_adb_filenames_follow_platform_case_rules(self):
+        uppercase = self.root / "ADB.EXE"
+        uppercase.write_bytes(b"not executed: synthetic ADB location")
+        uppercase.chmod(0o700)
+        suffixless = self.root / "adb"
+        suffixless.write_bytes(b"not executed: synthetic ADB location")
+        suffixless.chmod(0o700)
+        uppercase_resolved = uppercase.resolve()
+        suffixless_resolved = suffixless.resolve()
+        with patch.object(android.os, "name", "nt"):
+            self.assertEqual(android._executable(uppercase), uppercase_resolved)
+            self.assertIsNone(android._executable(suffixless))
+        with patch.object(android.os, "name", "posix"):
+            self.assertIsNone(android._executable(uppercase))
+            self.assertEqual(android._executable(suffixless), suffixless_resolved)
+
+    @unittest.skipIf(os.name == "nt", "Synthetic symlinks do not require Windows privileges")
+    def test_adb_named_symlink_cannot_select_the_ldplayer_launcher(self):
+        launcher = self.root / "dnplayer.exe"
+        launcher.write_bytes(b"not executed: synthetic LDPlayer launcher")
+        launcher.chmod(0o700)
+        self.adb.unlink()
+        self.adb.symlink_to(launcher)
+        runner = FakeRunner()
+        with self.assertRaisesRegex(android.InventoryError, "executable"):
+            self.inventory(runner)
+        self.assertEqual(runner.calls, [])
+        self.assertFalse(self.output.exists())
+
     def test_subprocess_locks_local_server_and_bounds_combined_pipe_output(self):
         process = FakeProcess(stdout=b"out", stderr=b"err")
         with (patch.object(android.subprocess, "Popen", return_value=process) as popen,

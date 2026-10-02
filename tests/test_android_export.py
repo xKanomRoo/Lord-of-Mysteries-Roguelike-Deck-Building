@@ -112,7 +112,7 @@ class AndroidExportTests(unittest.TestCase):
         temporary = tempfile.TemporaryDirectory(prefix="synthetic-android-export-")
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
-        self.adb = self.root / "trusted-adb.exe"
+        self.adb = self.root / "adb.exe"
         self.adb.write_bytes(b"not executed")
         self.adb.chmod(0o700)
         self.report = self.root / "report.json"
@@ -174,6 +174,18 @@ class AndroidExportTests(unittest.TestCase):
         with patch.object(export.android, "locate_adb", return_value=self.adb) as locate:
             self.run_export()
         locate.assert_called_once_with(self.adb)
+
+    def test_ldplayer_launcher_is_rejected_before_export_commands(self):
+        launcher = self.root / "dnplayer.exe"
+        launcher.write_bytes(b"not executed: synthetic LDPlayer launcher")
+        launcher.chmod(0o700)
+        runner = FakeRunner()
+        with (patch.object(export.subprocess, "Popen") as popen,
+              self.assertRaisesRegex(android.InventoryError, "dnplayer.exe")):
+            export.export_resources(self.report, self.output, launcher, runner)
+        popen.assert_not_called()
+        self.assertEqual(runner.calls, [])
+        self.assert_clean()
 
     def test_package_serial_scope_and_incomplete_inventory_fail_before_adb(self):
         cases = [

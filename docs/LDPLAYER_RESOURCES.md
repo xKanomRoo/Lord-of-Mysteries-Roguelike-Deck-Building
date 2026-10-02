@@ -48,6 +48,8 @@ py .\tools\inventory_android_resources.py --adb "C:\LDPlayer\LDPlayer9\adb.exe" 
 คลิกขวา shortcut LDPlayer แล้วเลือก Open file location; บางครั้งต้องเปิด
 ตำแหน่งของ target ต่อ หากไม่มี `adb.exe` ให้ใช้ Android SDK Platform-Tools
 จาก Google ที่ติดตั้งไว้และระบุ path ของมัน
+ไฟล์ `dnplayer.exe` เป็นตัวเปิด LDPlayer ไม่ใช่ ADB การที่ `Test-Path` เป็น True
+บอกเพียงว่ามีไฟล์นั้นอยู่ ให้เลือก `adb.exe` เครื่องมือปฏิเสธชื่อ executable อื่น
 
 helper เลือกเฉพาะ emulator ที่เชื่อมต่อในเครื่อง ถ้ามีหลาย instance ให้ดูรายการ:
 
@@ -96,7 +98,7 @@ roots อาจอยู่ในรายงาน แต่ไม่ได้�
 resources ที่รับมาจะใช้เป็น
 หลักฐาน static แยกจากภาพ/ข้อความใหม่ของเกมต้นแบบ
 
-บนคลาวด์ทดสอบ ADB helper ผ่าน 16 tests ด้วยอุปกรณ์และ filesystem จำลอง
+บนคลาวด์ทดสอบ ADB helper ผ่าน 19 tests ด้วยอุปกรณ์และ filesystem จำลอง
 ภายหลังได้รับ inventory ที่ผู้ใช้สร้างบน Windows/Android SDK 34 แล้วตามส่วนถัดไป
 ผลนี้ไม่ได้เป็นการรัน Windows บนคลาวด์ และยังไม่ได้ตรวจ resource contents
 
@@ -145,3 +147,42 @@ manifest hash ซึ่งยังไม่ได้อ่าน
 หาก pull ล้มเหลวหรือขนาดไม่ตรงให้ส่งข้อความ error การเปลี่ยน patch ระหว่าง
 inventory กับ export อาจทำให้ขนาดเปลี่ยนและต้องตรวจรายการใหม่
 ขั้นนี้ยังไม่ได้ execute หรือ decode scripts/resources และยังไม่พิสูจน์ข้อมูลการ์ด
+
+## เมื่อย้าย Windows profile หรือไม่พบไฟล์ tool
+
+ถ้า error ระบุ `can't open file …tools\inventory_android_resources.py` แสดงว่า
+สคริปต์ไม่อยู่ใน working directory นั้น กรณีล่าสุด prompt อยู่ใต้
+`C:\Users\ASUS\Downloads\Lord-of-Mysteries-Roguelike-Deck-Building-main`
+และเลือก `dnplayer.exe` ให้ใช้ workspace สำหรับ research ที่อิง Windows profile
+ปัจจุบันแทน path ที่เจาะจง `MSi` หรือจำนวนชั้นของ ZIP repository
+
+เปิด LDPlayer ที่มีเกมและ local ADB ไว้ แล้วคัดลอกบล็อกนี้ทั้งชุด:
+
+```powershell
+$chaosResearchDir = Join-Path $env:USERPROFILE "Downloads\chaos-research"
+New-Item -ItemType Directory -Path "$chaosResearchDir\tools" -Force | Out-Null
+Set-Location -LiteralPath $chaosResearchDir
+
+foreach ($toolFile in @("inventory_android_resources.py", "export_android_research.py")) {
+  Invoke-WebRequest -Uri "https://raw.githubusercontent.com/xKanomRoo/Lord-of-Mysteries-Roguelike-Deck-Building/main/tools/$toolFile" -OutFile ".\tools\$toolFile" -ErrorAction Stop
+}
+
+py .\tools\inventory_android_resources.py --adb "D:\LDPlayer\LDPlayer14\adb.exe" --output ".local/ldplayer-resources-v1"
+
+if ($LASTEXITCODE -eq 0) {
+  py .\tools\export_android_research.py --adb "D:\LDPlayer\LDPlayer14\adb.exe" --report ".local/ldplayer-resources-v1/report.json" --output ".local/chaos-runtime-export-v1"
+  if ($LASTEXITCODE -eq 0) {
+    Invoke-Item .\.local\chaos-runtime-export-v1
+  }
+}
+```
+
+workspace นี้ใช้ Python standard library และ helper สองไฟล์ ไม่ต้องติดตั้งเกม
+ต้นแบบหรือหา repository root ก่อนตรวจ emulator `adb.exe` path อิง installation
+folder ที่ผู้ใช้ระบุ ให้เปลี่ยนเฉพาะเมื่อไฟล์ ADB อยู่ที่อื่น
+
+ถ้าสำเร็จ แนบ ZIP ทั้งสองไฟล์ตามส่วน export ด้านบน หาก inventory/export หยุด
+ให้ส่งข้อความ error และ report ที่สร้างได้ ชุด selected resources ผูกกับ paths
+และ sizes จาก inventory เดิม การเปลี่ยน game patch อาจทำให้ต้องเลือกชุดใหม่
+ถ้าเคยใช้ workspace นี้แล้ว ให้เปลี่ยน output directory เป็นชื่อใหม่ทั้งสองขั้น
+และเปลี่ยน `--report` ให้ตรงกับ directory ของ inventory ใหม่
