@@ -127,3 +127,8 @@ inventory ระบุ sdata ทั้งหมด 15 files รวม 52,360,002
 ขนาดเล็ก ขั้นวิจัยถัดไปคือระบุ container/schema ของ sdata และ init.jbin ก่อนขอข้อมูล
 เพิ่มแบบมีเป้าหมาย ไม่สรุปว่าเนื้อหาที่ขาดต้องอยู่ใน blobs หรือ server แน่นอน
 ยังไม่สามารถสร้างหน้าจอเกมต่อสู้ที่ตรงต้นฉบับจากหลักฐานชุดนี้
+
+ตรวจ static เพิ่มจากตัวอย่าง sdata เดิมพบ common trailer 518 bytes ตามรายละเอียด
+ใน [ขั้นตรวจ native reader](../NEXT_APK_STEP.md) จึงเลือกขอ ARM64 config APK
+21.92 MiB ซึ่งมี libraries ที่ใช้ตรวจ reader ได้ต่อ ก่อนขอ sdata ใหญ่ทั้งชุด
+ยังไม่ได้รับ native APK และยังไม่ยืนยันบทบาท loader ของ library ใด

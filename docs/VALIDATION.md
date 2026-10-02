@@ -7,7 +7,7 @@ Vite 7.3.6 จาก lockfile และ Chromium 151 บน Linux
 |---|---|
 | ติดตั้งด้วย `npm ci` | ผ่าน; hash ของ package-lock.json ก่อน/หลังตรงกัน |
 | `npm test` | ผ่าน 12 tests, ไม่มี skipped |
-| `npm run test:python` | ผ่าน 102 tests, ไม่มี skipped; รวม pack reader, CSB, LZ4/SCT/SCSP, optional ASTC และ wireframe |
+| `npm run test:python` | ผ่าน 111 tests, ไม่มี skipped; รวม pack reader, CSB, LZ4/SCT/SCSP, optional ASTC, wireframe และ native APK extraction |
 | `npm run build` | ผ่าน; ได้ production bundle |
 | `npm run lore:build` และค้น `ritual memory` | ผ่าน; 1 original-design source, 2 chunks, source/hash/line refs |
 | `npm run smoke` | ผ่านใน Chromium จริง; ชนะสามห้องด้วย 50 การกระทำและเลือกสองรางวัล |
@@ -20,6 +20,7 @@ Vite 7.3.6 จาก lockfile และ Chromium 151 บน Linux
 | Optional ASTC decoder | texture2ddecoder 1.0.6 Linux wheel ตรวจ SHA ตรง official PyPI, แยกใน .local; format40 ASTC4×4,47 ASTC8×8 ของ pack นี้ |
 | Wireframe browser | Chromium ผ่าน 18 scenes, scene/branch/hidden toggles และ node inspection; zero runtime errors; ภาพเป็น serialized diagram |
 | Full XAPK / gameplay อ้างอิง | full XAPK ไม่มีในคลาวด์; inventory ผู้ใช้อ่าน APK ย่อยทั้ง 11 ได้; ไม่มี decoded combat rules หรือ battle layouts |
+| Native APK helper | 9 synthetic tests ผ่าน: standalone CLI/import, report lineage, CRC/hash/limits, preserving outputs และ tempfile/atomic publish lifecycle; ยังไม่ได้รับ native APK จริงหรือรันบน NTFS จริง |
 | เว็บไซต์ lore | HEAD ถูก proxy ปฏิเสธ 403; draft domains ยังไม่ยืนยัน runtime propagation |
 
 ภาพใน `docs/images/` มาจากเกมต้นแบบนี้ใน Chromium เป็นภาพและ UI ที่สร้างใหม่

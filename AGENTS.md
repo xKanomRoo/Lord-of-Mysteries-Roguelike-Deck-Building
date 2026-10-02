@@ -26,6 +26,8 @@ not create a Git worktree unless the user explicitly requests one.
 - `tools/create_research_pack.py`: hash-verified selected bootstrap resources for
   static inspection; pack output is ignored and never imported into the product.
 - `tools/read_research_pack.py`: verifies every packed member before unpacking.
+- `tools/extract_nested_apk.py`: report-verified outer APK selection capped at 30 MiB;
+  read docs/NEXT_APK_STEP.md for the pending native-reader research stage.
 - `tools/decode_csb.py`: bounded documented Cocos Studio scene subset with offsets.
 - `tools/render_csb_wireframe.py`: approximate serialized layout diagrams, not runtime screenshots.
 - `tools/decode_texture.py`: bounded SCT/SCSP inspection and SCT1 PNG decoding.
@@ -56,6 +58,10 @@ not create a Git worktree unless the user explicitly requests one.
   third-party books in Git. Keep research outputs in `.local/` or outside checkout.
 - Research packs may hold selected reference assets for private static inspection;
   keep those packs ignored and never execute their scripts or compiled payloads.
+- The user has requested research on downloading game resources from the server.
+  Read docs/SERVER_RESOURCES.md: patch hooks are observed, but no verified public
+  CDN/manifest URL has been found. Only investigate documented resource endpoints
+  within the user's access; do not guess private APIs or bypass authentication.
 - Use original placeholder art and text for the playable demo. Import reference
   assets into the product only when the user has supplied appropriate permission.
 - Retrieve bounded source passages rather than putting entire novels into prompts.

@@ -60,6 +60,13 @@ python tools/analyze_apk.py /path/to/reference.xapk \
 เมื่อมีรายงานแล้ว ใช้ [research pack](docs/RESEARCH_PACK.md) รวมเฉพาะ bootstrap
 resources ให้เล็กกว่า 30 MiB พร้อม source hashes เพื่อส่งมาตรวจต่อโดยไม่ส่งทั้งเกม
 
+ขั้นวิจัยถัดไปสำหรับ card/battle data: [แยก native APK 21.92 MiB](docs/NEXT_APK_STEP.md)
+เพื่อตรวจ reader ของ custom containers ก่อนเลือก blobs ใหญ่ Native APK ยังไม่ได้รับ
+จึงยังไม่มีผล decode gameplay จาก library
+
+ถ้า resources ถูกโหลดภายหลัง ดู [ทางเลือกดึงไฟล์จาก patch/CDN หรือ client](docs/SERVER_RESOURCES.md)
+ตอนนี้พบ patch hooks ใน bootstrap แต่ยังไม่มี endpoint ที่ยืนยันสำหรับดาวน์โหลด
+
 ## ให้ Codex ใช้ lore แบบออฟไลน์
 
 ```sh
