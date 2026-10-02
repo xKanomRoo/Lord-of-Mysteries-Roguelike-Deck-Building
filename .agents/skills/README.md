@@ -8,4 +8,3 @@ file-reading fallback when a runtime does not expose these names in its skill ca
 See [the role map](../../docs/AGENT_TEAM.md) and [the player's brief](../../docs/PLAYER_VISION.md).
 Workers share one checkout; the coordinator assigns paths and alone writes shared memory.
 Runtime collaboration tools enable actual sub-agents; without them use sequential lanes.
-

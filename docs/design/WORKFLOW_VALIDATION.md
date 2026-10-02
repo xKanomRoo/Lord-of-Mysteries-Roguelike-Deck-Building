@@ -37,4 +37,3 @@
 เพิ่มชื่อใน global catalog; ยังไม่ได้ตรวจการ restore/load ใน cloud task ใหม่
 บันทึก startup draft ไม่ใช่ publish/apply snapshot หรือเปิด agents ค้างอัตโนมัติ
 ผลเดิมของเกม/APK/Supabase อยู่ [VALIDATION](../VALIDATION.md)
-
