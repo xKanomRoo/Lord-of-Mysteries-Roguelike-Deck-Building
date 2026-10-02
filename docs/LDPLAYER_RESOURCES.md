@@ -279,15 +279,18 @@ inventory หรือ export ล้มเหลว ตัว exporter ตรว
 ได้รับ core/English ZIPs แล้ว อ่าน manifest และฐานข้อความอังกฤษได้จริง
 รวม card text 4,725 entries (ชื่อ/คำอธิบาย/variants ไม่ใช่จำนวน playable cards)
 ดู [ผลวิเคราะห์](research/CHAOS_RUNTIME_ANALYSIS.md)
-ค่าตัวเลขยังเป็น placeholders และ combat CSBs ยังไม่มี contents ในคลาวด์
-เลือกเพิ่ม 18 resources จาก manifest จริง: DB 13 และ CSB 5
+เลือกเพิ่ม 18 resources จาก manifest จริง: DB 13 และ CSB 5 เพื่อเชื่อม numerical
+definitions กับข้อความและอ่าน layout ภายหลังได้รับชุดนี้แล้วและตรวจครบ
+อ่านผลใน [card/battle analysis](research/CHAOS_CARD_BATTLE_ANALYSIS.md)
 
 เครื่องมือใหม่อ่านเฉพาะช่วงที่ครอบคลุม stored payload 622,458 bytes
 aligned chunk readback รวม 1,703,936 bytes และอ่าน manifest 7,506,387 bytes
 เพื่อเทียบ source hash ก่อนดึงข้อมูล รวม transfer ที่คาดไว้ 9,210,323 bytes
 ไม่ต้องคัดลอก base chunks หลาย GB ตัว export ไม่เติมค่าการ์ดหรือ decode assets
 การรัน Windows ล่าสุดพบว่า `dd` ที่เรียกตรง ๆ ใช้ไม่ได้ แต่ `/system/bin/toybox dd`
-มี applet ที่รองรับ เครื่องมือจะตรวจ backend ก่อนดึง manifest; ZIP ชุดนี้ยังรอผลรันใหม่
+มี applet ที่รองรับ เครื่องมือจะตรวจ backend ก่อนดึง manifest ภายหลังได้รับ
+ZIP ชุดนี้แล้วและตรวจ decoded FHSH ครบ 18 resources ดู
+[ผล DB/UI](research/CHAOS_CARD_BATTLE_ANALYSIS.md) ไม่ต้องส่ง ZIP เดิมซ้ำ
 
 เปิด LDPlayer เดิมค้างไว้ คัดลอกบล็อกนี้ทั้งหมดลง PowerShell:
 
@@ -331,7 +334,8 @@ decoded FHSH ตรวจภายหลังบนคลาวด์เมื�
 diagnostic รายงาน `remote_dd_exit=127; remote_detail=dd: no such tool`
 สาเหตุนี้อยู่ที่ `dd` ที่เรียกตรง ๆ ไม่ใช่หลักฐานว่า ADB หรือเกมหายไป
 probe เพิ่มเติมแสดง help ของ `/system/bin/toybox dd` และ Toybox 0.8.9-android
-ส่วน `/system/xbin/busybox` ไม่พบ; ยังไม่ได้ยืนยัน full range export สำเร็จ
+ส่วน `/system/xbin/busybox` ไม่พบ ภายหลังได้รับ range ZIP ที่ประกาศ Toybox reader
+พร้อม bytes/hash/decoded FHSH ตรงครบ ชุดข้อมูลที่เลือกจึงพร้อมวิเคราะห์บนคลาวด์
 
 helper ตรวจ fixed backends ก่อนดึง manifest: `dd`, `/system/bin/toybox dd`,
 `/system/xbin/busybox dd`, `/system/bin/busybox dd` แต่ละ probe ใช้ synthetic

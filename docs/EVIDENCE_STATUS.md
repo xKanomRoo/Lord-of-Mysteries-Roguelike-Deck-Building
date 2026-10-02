@@ -8,7 +8,7 @@
 | รายการไฟล์ชั้นนอก | ได้รับรายงานจากผู้ใช้ | 13 entries มี APK ย่อย 11 ไฟล์ |
 | รายการใน APK ย่อย | ได้รับรายงานรอบใหม่ | อ่าน APK ย่อยครบ 11, รวม 1,417 entries, errors ว่าง; ดู docs/research/CHAOS_NESTED_REPORT.md |
 | Scene format / engine evidence | ยืนยัน Cocos Studio format และ native version labels | returned cocos2d-x-4.0 / V8 12.4.254.21; ไม่ใช่หลักฐานเวอร์ชัน engine fork ทั้งหมด |
-| กฎเกม / combat UI | อ่านข้อความจริงได้บางส่วน; numeric rules/layouts ยังรอข้อมูล | English text DB มี card@ entries 4,725; placeholders ยังต้องเชื่อม numeric definitions; ยังไม่มี combat CSB contents |
+| กฎเกม / combat UI | อ่าน selected costs/effects และ UI components จริงแล้ว | English card@4,725entries; DB card rows278รวมvariants/effect rows1,139; Gear Bag cost1/DRAWvalue2; runtime damage formulas และ complete combat HUD ยังไม่ยืนยัน |
 | UI layouts | อ่าน 18/18 ฉาก, 474 nodes / WidgetOptions | รวม vendor TileSprite 5 จาก native reader; properties/animation/constraints ยังอ่านไม่ครบ; wireframe เป็น serialized projection |
 | Native APK | ได้รับและตรวจ hash แล้ว | 22,979,689 bytes; ARM64 libraries 10 ไฟล์; ไม่ execute |
 | PLPcK bootstrap | ตรวจ container 26 records | 25 V8 cached-data payloads; bootstrap modules ไม่ใช่ decoded gameplay spec |
@@ -18,7 +18,9 @@
 | LDPlayer resources | ได้รับ runtime ZIPs แล้ว | payload 6 files /41,759,987 bytes ผ่าน CRC/SHA; manifest v4 มี 87,529 paths/57chunk entries; manifest list ไม่ได้พิสูจน์ทุก chunk อยู่ใน emulator |
 | English text DB | ถอดและตรวจ container ครบ | PLPcK216,616records/108,306texts; card@4,725 entries รวม variants; exact sizes/FHSH/native source hash ตรวจผ่าน; ดู runtime analysis |
 | main.jbin | คลาย Zstd/FHSH ผ่าน; linked metadata บางส่วน | 2,167records/2,166V8cache; compact parser ยังปฏิเสธ complete coverage; ไม่ execute หรือคืน source JS |
-| Card/battle range export | พบ dd backend ใช้ไม่ได้; ยังรอ ZIP ใหม่ | ADB exec-out echo ผ่าน แต่ bare dd ตอบ no such tool/127; Toybox dd help รองรับ; helper ตรวจ fixed backend ก่อนดึงไฟล์และเลือก Toybox เมื่อ probe ผ่าน; ยังไม่มี 18 payloads |
+| Card/battle range export | ได้รับและตรวจ ZIP แล้ว | source indexประกาศToybox backend; 18payloads622,458stored/1,342,080decodedbytesผ่านCRC/SHA/manifestrows/Zstd/FHSH; surrounding span/fullchunk hashes และ exporter scope assertions ยังไม่ independently verified |
+| Selected DB shards | อ่านแปด shards ครบ | 2,691rows/5,780records; source-pinned wrapper/schema/index/bucket/fullcoverageผ่าน; trailer38bytesตรวจตรงแต่purposeunknown; fulltablesไม่commit |
+| Card/hand UI | อ่านห้าฉากครบ documented subset | 683nodes/682WidgetOptions/unsupportedTileSprite1; cardroot0x0จริงและdiagramviewportinferred; handbranches1–13เป็นsavedalternatives; fullHUD/animation/assetsยังไม่ยืนยัน |
 | Texture images | ถอด PNG ได้ 108 ไฟล์ | SCT1 RGB565+A8 2; SCT2 ASTC 106; ไม่ใช่ screenshot เกมที่ประกอบแล้ว |
 | กฎต้นแบบใน repository นี้ | งานออกแบบใหม่ | source และ tests ใน `src/`, `tests/` |
 | ภาพและข้อความต้นแบบ | งานออกแบบใหม่ | CSS/SVG ใน source ไม่ได้คัดลอก asset จากเกม |

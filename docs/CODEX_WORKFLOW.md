@@ -35,7 +35,10 @@ Unity IL2CPP, bundle แบบเฉพาะ และ binary resources ต้�
 
 ผลที่มีแล้วสำหรับ task นี้: [bootstrap analysis](research/CHAOS_BOOTSTRAP_ANALYSIS.md)
 อ่าน Cocos Studio 18 ฉากและสร้าง wireframe ได้ ถอด texture 108 ไฟล์เป็น PNG แล้ว
-ใช้เป็นหลักฐาน title/download/modal UX ได้ แต่ยังไม่มี battle/card schema
+ใช้เป็นหลักฐาน title/download/modal UX ได้ ภายหลัง range ZIP คืน selected
+card/effect DBs และ hand/card UI geometry แล้ว อ่าน
+[card/battle analysis](research/CHAOS_CARD_BATTLE_ANALYSIS.md) สำหรับ rows/offsets
+และข้อจำกัดของ coefficients, variants และ complete combat assembly
 ทำซ้ำบน Windows ตาม [BOOTSTRAP_REPLAY.md](BOOTSTRAP_REPLAY.md)
 
 ## Prompt สำหรับงานถัดไป
@@ -67,6 +70,7 @@ passage ที่เกี่ยวข้องพร้อม provenance ให
 - ควบคุมด้วยแป้นพิมพ์และจอเล็กได้ ไม่มีปุ่มสำคัญหาย
 - ทำซ้ำจาก lockfile และ seed เดิมได้ โดยไม่ต้องเปิดเว็บไซต์ระหว่างรันเกม
 
-มีผลวิเคราะห์ bootstrap UI แล้ว ส่วน combat/card evidence และ canon sources
-ยังขาด ขั้นถัดไปที่ผู้ใช้เลือกคือ [ตรวจ native reader](NEXT_APK_STEP.md)
-ไม่ถือว่าการอ่าน title scene ยืนยันกติกาหรือการทำ adaptation ที่ตรงเนื้อหานิยาย
+มีผล bootstrap, runtime text และ selected card/battle data แล้ว ขั้นถัดไปของ
+การออกแบบควรใช้ costs/effects/conditions ที่ตรวจได้เป็นตัวอย่างโครงสร้าง
+แล้วเขียน balance และ LoTM/CoI content ของเราเองพร้อมแหล่ง canon
+card parameters และผัง UI ไม่ยืนยัน runtime formulas หรือเหตุผลในใจ developer

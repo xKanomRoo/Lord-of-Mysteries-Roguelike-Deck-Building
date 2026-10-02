@@ -5,8 +5,10 @@
 
 **สถานะ:** กฎเกม ข้อความ และภาพในต้นแบบเป็นงานออกแบบใหม่ ได้รับ bootstrap pack
 จาก Chaos Zero Nightmare แล้ว และอ่านโครงสร้าง UI ส่วนเปิดเกมได้ 18 ฉาก / 474 nodes
-ได้รับ runtime ZIPs และถอดข้อความเกี่ยวกับการ์ด 4,725 รายการแล้ว ค่าตัวเลขและ
-combat layouts ยังรอ resource เพิ่ม เวอร์ชัน `1.0.811` ยืนยันจาก manifest แล้ว
+ได้รับ runtime ZIPs และถอดข้อความเกี่ยวกับการ์ด 4,725 รายการแล้ว range ZIP ใหม่
+คืน card rows 278 รวม variants, effect parameters และ UI 5 ฉาก / 683 nodes
+สูตรดาเมจและ complete combat HUD ยังไม่ยืนยัน ดู [card/battle analysis](docs/research/CHAOS_CARD_BATTLE_ANALYSIS.md)
+เวอร์ชัน `1.0.811` ยืนยันจาก manifest แล้ว
 แต่ยังไม่ยืนยันว่าเป็น release ล่าสุด
 ดู [สถานะหลักฐาน](docs/EVIDENCE_STATUS.md)
 
@@ -71,7 +73,9 @@ resources ให้เล็กกว่า 30 MiB พร้อม source hashes
 ได้รับ inventory ผู้ใช้แล้ว: 47 files / 7.56 GiB เลือก manifest, ARM64 และ
 English chunks 6 files สำหรับ [export สอง ZIP](docs/LDPLAYER_RESOURCES.md#export-resource-ที่เลือกจากรายงานนี้)
 ZIPs ทั้งสองได้รับและผ่าน CRC/SHA แล้ว อ่าน manifest 87,529 paths และฐานข้อความ
-อังกฤษได้ ขั้นต่อไปคือ [ดึง card definitions/combat CSBs เป็น byte ranges](docs/LDPLAYER_RESOURCES.md#ดึงค่าการ์ดและฉากต่อสู้เป็น-byte-ranges)
+อังกฤษได้ [range ZIP ชุดการ์ด/UI](docs/LDPLAYER_RESOURCES.md#ดึงค่าการ์ดและฉากต่อสู้เป็น-byte-ranges)
+ได้รับแล้วและผ่าน decoded FHSH ครบ 18 resources ดู
+[วิธีอ่าน DB และผัง UI ซ้ำ](docs/research/CHAOS_CARD_BATTLE_ANALYSIS.md)
 อีกทางคือ [entry/config request](docs/SERVER_RESOURCES.md): ยืนยัน endpoint จาก
 native แล้ว แต่ request ในคลาวด์ถูก proxy ปฏิเสธก่อนถึงเกมเซิร์ฟเวอร์
 

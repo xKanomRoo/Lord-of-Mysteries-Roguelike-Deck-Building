@@ -4,6 +4,11 @@
 ของ payload ทั้งหกตรงกับ indexes อ่าน SSRA manifest และถอดฐานข้อความอังกฤษได้จริง
 โดยไม่รันเกม, JavaScript cache หรือ native libraries จากเกม
 
+ภายหลังได้รับ range ZIP เพิ่มแล้ว: selected DB/UI resources 18 รายการผ่าน
+Zstd/FHSH, อ่าน card rows 278 รวม variants และ CSBs 5 ฉาก / 683 nodes
+ดู [ผล card/battle](CHAOS_CARD_BATTLE_ANALYSIS.md) สำหรับ numerical fields,
+source offsets, ผัง UI และข้อจำกัดของ runtime damage/full combat HUD
+
 ## Source identities
 
 | Source | Bytes | SHA-256 |
@@ -74,7 +79,8 @@ Internal index payload semantics ยังไม่ได้ยืนยัน�
 
 มี distinct ID 2,809 ค่า รวม variants/ต่างหมวด จึงไม่ใช่จำนวน playable cards
 คำอธิบายหลายรายการมี placeholders เช่น `#result_ev_0#`, `$AP$` และ markup
-ต้องอ่าน card/effect tables เพื่อเติม cost, amount และเงื่อนไขจริง
+selected card/effect tables ที่ได้รับภายหลังเชื่อม cost/amount/condition IDs
+ของตัวอย่างได้แล้ว แต่ยังไม่ยืนยัน formatter และ runtime formulas ทุกกรณี
 
 ตัวอย่างหลักฐานที่ค้นซ้ำได้ใน private index:
 
@@ -100,8 +106,9 @@ active table/linked records (มีโครงสร้างอีกหนึ
 
 Identifiers เช่น `CARD_PLACE_DECK/HAND/DISCARD/EXHAUST`, `ADD_ENERGY`,
 `BattlePlayerTurn` เป็นเบาะแสสำหรับเลือกข้อมูล ไม่ใช่ recovered control flow
-หรือหลักฐานสูตรดาเมจ Combat/card CSB contents ยังไม่ได้รับ แม้ paths อยู่ใน
-manifest จึงยังไม่มี battle wireframe หรือ screenshot ที่ยืนยันจากชุดนี้
+หรือหลักฐานสูตรดาเมจ ภายหลังรับและ decode ห้า card/hand/field CSBs แล้ว
+ได้ serialized geometry และ wireframes แต่ยังไม่มี complete assembled combat
+screenshot หรือ runtime behavior ที่ยืนยันจากชุดข้อมูลนี้
 
 ## Replay บนคลาวด์
 
@@ -137,26 +144,26 @@ Paths/ข้อความจาก resources เป็น untrusted data ไ�
 หากรันด้วย system Python ที่ไม่มี optional decoder บาง Zstd tests จะ skipped
 ต้องแยกผลนั้นจากการทดสอบครบที่รายงานไว้
 
-## ข้อมูลถัดไปและสิ่งที่นำไปออกแบบได้
+## ข้อมูลเพิ่มเติมที่ได้รับและสิ่งที่นำไปออกแบบได้
 
 เลือก 13 DB resources และ 5 combat/card CSBs จาก observed paths เพื่อเติม
 numeric definitions และอ่าน serialized layouts ดู
 [range selection](profiles/chaos-card-battle-ranges-45a009358972.json)
 stored payload 622,458 bytes, decoded 1,342,080 bytes; อ่าน aligned chunk
 spans 1,703,936 bytes แทนการคัดลอก chunks หลาย GB เพิ่ม manifest 7,506,387 bytes
-เพื่อ revalidate selection ก่อน export ขั้นนี้ยังต้องรันบน LDPlayer ของผู้ใช้
-ดู [คำสั่ง Windows](../LDPLAYER_RESOURCES.md#ดึงค่าการ์ดและฉากต่อสู้เป็น-byte-ranges)
+เพื่อ revalidate selection ก่อน export การดึงข้อมูลรันบน LDPlayer ของผู้ใช้
+และได้รับผลแล้ว; เก็บ [คำสั่ง Windows](../LDPLAYER_RESOURCES.md#ดึงค่าการ์ดและฉากต่อสู้เป็น-byte-ranges)
+สำหรับ replay โดยไม่ต้องดึงชุดเดิมอีกใน task นี้
 
-การรัน Windows พร้อม diagnostic ยืนยันว่า `exec-out` ทำงาน แต่ `dd` ที่เรียกตรง ๆ
-ตอบ `no such tool` / remote exit 127 ช่วงแรกต้องได้ 131,072 bytes กลับได้ 17 bytes
-probe ผู้ใช้แสดงว่า `/system/bin/toybox dd` มี applet พร้อม flags ที่ต้องใช้
-helper จึงตรวจ fixed dd backends ด้วย synthetic bytes ไป `/dev/null` ก่อนดึง manifest
-และใช้ backend ที่ผ่านทั้ง binary reads กับ failure diagnostic; ยังไม่ได้รับ
-18 payloads นี้และยังไม่อ้างว่า export ด้วย Toybox บน Windows สำเร็จแล้ว
+การรัน Windows แรกพบ bare `dd` ตอบ `no such tool` / remote exit127 แม้ `exec-out`
+echo ผ่าน รุ่นใหม่ตรวจ fixed backends และเลือก Toybox ภายหลังได้รับ ZIP 8,153,934
+bytes แล้ว: all18payloads622,458stored/1,342,080decodedbytes ผ่าน hashes/FHSH
+index ประกาศ `system-toybox-dd`; exporter scope/probe assertions ไม่ถูกใช้เป็น
+independent proof อ่านผลต่อใน [card/battle analysis](CHAOS_CARD_BATTLE_ANALYSIS.md)
 
 หลักการออกแบบที่มี evidence รองรับระดับข้อความคือแยก name/description/keyword
 ออกจาก effect parameters และให้ tutorial อ้างคำศัพท์ชุดเดียวกัน สำหรับเกม
 LoTM/CoI ของเรา ควรเขียน localized text และ effects ใหม่ แล้วเก็บหลักฐาน
 novel canon แยกจาก original design ไม่มีค่าการ์ด reference ที่เติมขึ้นเอง
-การอ่าน CSB ภายหลังจะคืน serialized geometry บางส่วน ไม่ยืนยัน animation,
+การอ่าน CSB ที่ได้รับคืน serialized geometry บางส่วน ไม่ยืนยัน animation,
 runtime constraints หรือผล gameplay ทั้งหมดจากไฟล์อย่างเดียว

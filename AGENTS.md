@@ -51,8 +51,16 @@ not create a Git worktree unless the user explicitly requests one.
   its transform table. Full reference text stays ignored.
 - `tools/export_ssra_ranges.py`: source-pinned selection of small card/battle
   resource byte ranges from the user's local emulator, not whole base chunks.
+- `tools/read_ssra_ranges.py`: verify the exact received 18-resource selection,
+  rederive manifest rows/segments and decode inert ordinal files with FHSH checks.
+- `tools/read_card_database.py`: exact source-pinned local wrapper and observed
+  PLPcK DB profile, complete coverage, schema/row/index checks and field offsets;
+  retain serialized strings, never execute formulas or publish full reference tables.
 - `tools/decode_csb.py`: bounded documented Cocos Studio scene subset with offsets.
 - `tools/render_csb_wireframe.py`: approximate serialized layout diagrams, not runtime screenshots.
+- `tools/render_card_battle.py`: replay the verified five-scene selection as private
+  offline HTML/SVG diagrams; preserve the card's zero-size root and explicitly label
+  its inferred component viewport, without loading reference textures or code.
 - `tools/decode_texture.py`: bounded SCT/SCSP inspection and SCT1 PNG decoding.
 - `tools/lore_index.py`: offline local text retrieval with source metadata.
 - `lore/sources.json`: provenance for imported lore; never call original writing
@@ -68,8 +76,9 @@ not create a Git worktree unless the user explicitly requests one.
   The supplied native APK has ten hash-verified ARM64 libraries. Returned engine
   labels are cocos2d-x-4.0 and V8 12.4.254.21; read
   docs/research/CHAOS_NATIVE_ANALYSIS.md. The exact complete
-  engine version and combat layouts remain unknown. Runtime English text now
-  supplies card descriptions, but numeric rules remain unresolved. Never describe
+  engine version and complete combat assembly remain unknown. Runtime English text
+  and selected DBs now supply descriptions, costs and effect scalars; runtime
+  formulas remain unresolved. Never describe
   prototype rules as recovered Chaos Zero Nightmare rules.
 - Layout coordinates are serialized local values. Runtime constraints, clipping,
   custom widgets, animation and regional variants may change the final screen.
@@ -98,10 +107,21 @@ not create a Git worktree unless the user explicitly requests one.
   both selected runtime ZIPs have now arrived and passed CRC/SHA checks. Read
   docs/research/CHAOS_RUNTIME_ANALYSIS.md: manifest has 87,529 unique paths;
   text DB yielded 108,306 English entries including 4,725 card text entries.
-  Counts include fields/variants, not playable card counts. Placeholder amounts
-  remain unresolved. Source inventory hash declared by these ZIPs differs from
+  Counts include fields/variants, not playable card counts. Source inventory hash declared by these ZIPs differs from
   the earlier uploaded inventory; do not conflate them. Select only the 18
-  source-pinned next DB/CSB ranges; do not request all base chunks or app data.
+  source-pinned DB/CSB ranges; do not request all base chunks or app data.
+  That range ZIP has now arrived: all 18 payloads passed CRC/SHA/Zstd/FHSH,
+  1,342,080 decoded bytes. Read docs/research/CHAOS_CARD_BATTLE_ANALYSIS.md:
+  eight DB shards contain 2,691 rows (278 card rows including variants) and five
+  CSBs contain 683 nodes / 682 decoded widgets / one unsupported TileSprite.
+  Gear Bag cost1 links DRAW value2; damage values100/220/500 are serialized
+  scalars, not verified flat HP damage. Cost -1 semantics and runtime modifiers
+  remain unknown. DB primary counter0 + exact updated38-byte appended header
+  are validated; trailer purpose is unresolved, not a proven recovery journal.
+  The card component root0x0 is preserved; a diagram viewport is explicitly
+  inferred. Saved labels/branch counts are not balance rules or hand limits.
+  Complete AP/end-turn HUD, nested CSBs, reference art and runtime assembly
+  are not supplied by this five-scene selection. All full research stays ignored.
 - Use original placeholder art and text for the playable demo. Import reference
   assets into the product only when the user has supplied appropriate permission.
 - Retrieve bounded source passages rather than putting entire novels into prompts.
