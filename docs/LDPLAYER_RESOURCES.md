@@ -98,7 +98,7 @@ roots อาจอยู่ในรายงาน แต่ไม่ได้�
 resources ที่รับมาจะใช้เป็น
 หลักฐาน static แยกจากภาพ/ข้อความใหม่ของเกมต้นแบบ
 
-บนคลาวด์ทดสอบ ADB helper ผ่าน 19 tests ด้วยอุปกรณ์และ filesystem จำลอง
+บนคลาวด์ทดสอบ ADB helper ผ่าน 22 tests ด้วยอุปกรณ์และ filesystem จำลอง
 ภายหลังได้รับ inventory ที่ผู้ใช้สร้างบน Windows/Android SDK 34 แล้วตามส่วนถัดไป
 ผลนี้ไม่ได้เป็นการรัน Windows บนคลาวด์ และยังไม่ได้ตรวจ resource contents
 
@@ -186,3 +186,34 @@ folder ที่ผู้ใช้ระบุ ให้เปลี่ยนเ
 และ sizes จาก inventory เดิม การเปลี่ยน game patch อาจทำให้ต้องเลือกชุดใหม่
 ถ้าเคยใช้ workspace นี้แล้ว ให้เปลี่ยน output directory เป็นชื่อใหม่ทั้งสองขั้น
 และเปลี่ยน `--report` ให้ตรงกับ directory ของ inventory ใหม่
+
+## เมื่อ package query ได้ error: closed
+
+error นี้เกิดตอน ADB เรียก Android shell ไม่สำเร็จ การดาวน์โหลด helper และ
+การเลือก `adb.exe` อาจผ่านแล้ว แต่ยังตรวจไม่ได้ว่า package ติดตั้งอยู่หรือไม่
+ข้อความเครื่องมือปัจจุบันแยก transport failure, successful empty response
+และ malformed response แทนการเหมารวมว่าเกมไม่ได้ติดตั้ง
+
+บันทึก local ADB setting แล้ว restart LDPlayer instance ผ่านหน้าจอโปรแกรม
+รอ Android บูตเสร็จ จากนั้นรีเซ็ต local ADB server ด้วย executable ตัวเดิม:
+
+```powershell
+$ldAdbPath = "D:\LDPlayer\LDPlayer14\adb.exe"
+& $ldAdbPath -H 127.0.0.1 -P 5037 kill-server
+& $ldAdbPath -H 127.0.0.1 -P 5037 start-server
+& $ldAdbPath -H 127.0.0.1 -P 5037 devices -l
+```
+
+การ reset server ตัด ADB sessions ชั่วคราว จากรายการ devices เลือก serial
+จริงที่มี status `device` หากแสดง `emulator-5554 device` ใช้:
+
+```powershell
+& $ldAdbPath -H 127.0.0.1 -P 5037 -s "emulator-5554" shell echo adb-ok
+& $ldAdbPath -H 127.0.0.1 -P 5037 -s "emulator-5554" shell pm path com.smilegate.chaoszero.stove.google
+```
+
+ถ้า serial ต่างให้แทนค่าตามรายการจริง ทดสอบ echo ก่อน package query
+เมื่อได้ `adb-ok` และ package query คืน `package:/…apk` จึงรัน inventory
+และ export ตามขั้นก่อนหน้า ถ้า echo ยัง `error: closed` ให้ส่ง output ของ
+devices และ echo probe ยังไม่แก้ schema/package หรือเปลี่ยน resource paths
+เพราะปัญหาอยู่ก่อนขั้นตรวจไฟล์ Tool ไม่ทำ restart/retry ให้โดยอัตโนมัติ

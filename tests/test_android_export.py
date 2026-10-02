@@ -52,9 +52,11 @@ def inventory():
 
 class FakeRunner:
     def __init__(self, *, devices=None, installed=True, failed_pull=None,
-                 bad_size=None, stat_changed=None, stat_failed=None, mutate_after_pull=None):
+                 bad_size=None, stat_changed=None, stat_failed=None, mutate_after_pull=None,
+                 package_result=None):
         self.devices = devices or b"List of devices attached\nemulator-5554 device\n"
         self.installed = installed
+        self.package_result = package_result
         self.failed_pull = failed_pull
         self.bad_size = bad_size
         self.stat_changed = stat_changed
@@ -68,6 +70,8 @@ class FakeRunner:
         if args == ["devices", "-l"]:
             return android.CommandResult(0, self.devices)
         if args[-1] == f"pm path {export.PACKAGE}":
+            if self.package_result is not None:
+                return self.package_result
             return android.CommandResult(0, b"package:/data/app/synthetic/base.apk\n" if self.installed else b"")
         for target in SYNTHETIC_TARGETS:
             if args[-1] == export.target_stat_command(target):
@@ -230,6 +234,44 @@ class AndroidExportTests(unittest.TestCase):
             self.run_export(runner)
         self.assertEqual(len(runner.calls), 2)
         self.assert_clean()
+
+    def test_closed_adb_shell_fails_as_export_error_before_stat_or_pull(self):
+        runner = FakeRunner(package_result=android.CommandResult(1, b"", b"error: closed\n"))
+        with self.assertRaises(export.ExportError) as raised:
+            self.run_export(runner)
+        message = str(raised.exception)
+        self.assertIn("ADB shell transport failed", message)
+        self.assertIn("emulator-5554", message)
+        self.assertIn("error: closed", message)
+        self.assertIn("shell echo adb-ok", message)
+        self.assertNotIn("not installed", message)
+        self.assertEqual(len(runner.calls), 2)
+        self.assertEqual(runner.pulled, [])
+        self.assert_clean()
+
+    def test_nonzero_package_query_with_valid_stdout_stops_before_export(self):
+        runner = FakeRunner(package_result=android.CommandResult(
+            7, b"package:/data/app/synthetic/base.apk\n", b"package manager unavailable\n"))
+        with self.assertRaises(export.ExportError) as raised:
+            self.run_export(runner)
+        self.assertIn("ADB shell package query failed", str(raised.exception))
+        self.assertIn("exit 7", str(raised.exception))
+        self.assertNotIn("not installed", str(raised.exception))
+        self.assertEqual(len(runner.calls), 2)
+        self.assertEqual(runner.pulled, [])
+        self.assert_clean()
+
+    def test_successful_malformed_package_query_stops_before_remote_checks(self):
+        for body in (b"Error: service unavailable\n", b"package:/\n", b"\xff\n",
+                     b"package:/data/app/base.apk\nunknown line\n", b"package:/data/app/\x00base.apk\n"):
+            runner = FakeRunner(package_result=android.CommandResult(0, body))
+            with self.subTest(body=body), self.assertRaises(export.ExportError) as raised:
+                self.run_export(runner)
+            self.assertIn("Unexpected package-query response", str(raised.exception))
+            self.assertNotIn("not installed", str(raised.exception))
+            self.assertEqual(len(runner.calls), 2)
+            self.assertEqual(runner.pulled, [])
+            self.assert_clean()
 
     def test_inventory_missing_changed_and_duplicate_targets_are_rejected(self):
         report = inventory()

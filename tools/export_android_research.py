@@ -370,10 +370,10 @@ def export_resources(report_path: Path, output: Path, adb: Path | None = None, r
         raise ExportError("Could not list local ADB devices")
     serial = android.select_device(android.parse_devices(devices.stdout), report["serial"])
     installed = runner.run(["-s", serial, "shell", f"pm path {PACKAGE}"])
-    apk_lines = installed.stdout.decode("utf-8", "replace").splitlines()
-    if (installed.returncode or not apk_lines
-            or any(not line.startswith("package:/") or android._control_text(line) for line in apk_lines)):
-        raise ExportError("The fixed game package is not installed on the report's local emulator")
+    try:
+        android.validate_package_query(installed, serial)
+    except android.InventoryError as error:
+        raise ExportError(str(error)) from error
     for target in TARGETS:
         _check_remote(runner, serial, target)
     output.parent.mkdir(parents=True, exist_ok=True)

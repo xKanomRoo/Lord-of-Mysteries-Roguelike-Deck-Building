@@ -21,10 +21,11 @@ def records(root, files=()):
 
 class FakeRunner:
     def __init__(self, devices=b"List of devices attached\n127.0.0.1:5555 device product:synthetic\n",
-                 roots=None, installed=True):
+                 roots=None, installed=True, package_result=None):
         self.devices = devices
         self.roots = roots or {}
         self.installed = installed
+        self.package_result = package_result
         self.calls = []
 
     def run(self, args):
@@ -34,6 +35,8 @@ class FakeRunner:
         if args == ["devices", "-l"]:
             return android.CommandResult(0, self.devices)
         if args[-1] == f"pm path {android.PACKAGE}":
+            if self.package_result is not None:
+                return self.package_result
             return android.CommandResult(0, b"package:/data/app/synthetic/base.apk\n" if self.installed else b"")
         if args[-1] == "getprop ro.build.version.sdk":
             return android.CommandResult(0, b"28\n")
@@ -135,6 +138,45 @@ class AndroidInventoryTests(unittest.TestCase):
             self.inventory(runner)
         self.assertFalse(self.output.exists())
         self.assertEqual(len(runner.calls), 3)
+
+    def test_closed_adb_shell_reports_transport_failure_without_claiming_package_absent(self):
+        runner = FakeRunner(package_result=android.CommandResult(1, b"", b"error: closed\n"))
+        with self.assertRaises(android.InventoryError) as raised:
+            self.inventory(runner)
+        message = str(raised.exception)
+        self.assertIn("ADB shell transport failed", message)
+        self.assertIn("127.0.0.1:5555", message)
+        self.assertIn("error: closed", message)
+        self.assertIn("shell echo adb-ok", message)
+        self.assertIn("installation status is unknown", message)
+        self.assertNotIn("not installed", message)
+        self.assertFalse(self.output.exists())
+        self.assertEqual(len(runner.calls), 3)
+
+    def test_nonzero_package_query_does_not_accept_stdout_or_expose_unbounded_diagnostics(self):
+        runner = FakeRunner(package_result=android.CommandResult(
+            7, b"package:/data/app/synthetic/base.apk\n", b"package manager unavailable\n" + b"x" * 3000))
+        with self.assertRaises(android.InventoryError) as raised:
+            self.inventory(runner)
+        message = str(raised.exception)
+        self.assertIn("ADB shell package query failed", message)
+        self.assertIn("exit 7", message)
+        self.assertIn("package manager unavailable", message)
+        self.assertNotIn("not installed", message)
+        self.assertLess(len(message), 1024)
+        self.assertFalse(self.output.exists())
+        self.assertEqual(len(runner.calls), 3)
+
+    def test_successful_malformed_package_query_stops_before_resource_listing(self):
+        for body in (b"Error: service unavailable\n", b"package:/\n", b"\xff\n",
+                     b"package:/data/app/base.apk\nunknown line\n", b"package:/data/app/\x00base.apk\n"):
+            runner = FakeRunner(package_result=android.CommandResult(0, body))
+            with self.subTest(body=body), self.assertRaises(android.InventoryError) as raised:
+                self.inventory(runner)
+            self.assertIn("Unexpected package-query response", str(raised.exception))
+            self.assertNotIn("not installed", str(raised.exception))
+            self.assertFalse(self.output.exists())
+            self.assertEqual(len(runner.calls), 3)
 
     def test_spaces_shell_characters_and_unicode_in_filenames_are_data(self):
         root = android.RESOURCE_ROOTS[0]

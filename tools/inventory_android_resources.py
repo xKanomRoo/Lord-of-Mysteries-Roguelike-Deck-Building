@@ -73,6 +73,37 @@ def local_serial(serial: str) -> bool:
     return bool(match and 0 < int(match.group(1)) <= 65535)
 
 
+def validate_package_query(result: CommandResult, serial: str) -> list[str]:
+    """Separate ADB command failures from a successful absent-package response."""
+    if result.returncode:
+        detail = diagnostic(result.stderr)[:512] or diagnostic(result.stdout)[:512] or "no diagnostic returned"
+        failure = ("ADB shell transport failed" if re.search(r"\berror:\s*closed\b", detail, re.IGNORECASE)
+                   else "ADB shell package query failed")
+        raise InventoryError(
+            f"{failure} on {serial} (exit {result.returncode}): {detail}. "
+            "Package installation status is unknown. Check LDPlayer's local ADB connection "
+            "and wait for Android to finish booting. "
+            f"Test: adb -s {serial} shell echo adb-ok"
+        )
+    try:
+        text = result.stdout.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise InventoryError(
+            f"Unexpected package-query response on {serial}: output is not UTF-8; "
+            "package installation status is unknown"
+        ) from error
+    if not text.strip():
+        raise InventoryError(f"The fixed game package is not installed on local emulator {serial}")
+    lines = text.splitlines()
+    if any(not line.startswith("package:/") or not line.endswith(".apk") or _control_text(line)
+           for line in lines):
+        raise InventoryError(
+            f"Unexpected package-query response on {serial}: {diagnostic(result.stdout)[:512]}; "
+            "package installation status is unknown"
+        )
+    return lines
+
+
 def parse_devices(data: bytes) -> list[dict[str, str]]:
     try:
         lines = data.decode("utf-8").splitlines()
@@ -352,9 +383,7 @@ def inventory_resources(output: Path, adb: Path | None = None, serial: str | Non
         raise InventoryError(f"ADB devices failed: {diagnostic(devices_result.stderr)}")
     selected = select_device(parse_devices(devices_result.stdout), serial)
     package = runner.run(["-s", selected, "shell", f"pm path {PACKAGE}"])
-    apk_lines = package.stdout.decode("utf-8", "replace").splitlines()
-    if package.returncode or not apk_lines or any(not line.startswith("package:/") or _control_text(line) for line in apk_lines):
-        raise InventoryError(f"The fixed game package is not installed or pm path failed: {diagnostic(package.stderr)}")
+    apk_lines = validate_package_query(package, selected)
     sdk = runner.run(["-s", selected, "shell", "getprop ro.build.version.sdk"])
     sdk_value = sdk.stdout.strip()
     sdk_number = int(sdk_value) if not sdk.returncode and re.fullmatch(rb"[0-9]{1,3}", sdk_value) else None
