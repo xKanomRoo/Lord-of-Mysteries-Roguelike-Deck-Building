@@ -46,6 +46,7 @@ MAX_PAYLOAD_BYTES = 5 * 1024 * 1024
 MAX_READBACK_BYTES = 8 * 1024 * 1024
 MAX_BINARY_CALL_BYTES = 1024 * 1024
 MAX_BINARY_STDERR_BYTES = 64 * 1024
+MAX_DIAGNOSTIC_OUTPUT_BYTES = 64 * 1024
 MAX_ZIP_BYTES = 30 * 1024 * 1024
 BLOCK_BYTES = 65_536
 FILE_FIELDS = {"path", "row", "group_id", "offset", "stored_length", "decoded_length",
@@ -212,6 +213,17 @@ class RangeAdbRunner(existing.ExportAdbRunner):
         self.binary_remaining = MAX_READBACK_BYTES
         self.stderr_remaining = existing.MAX_ADB_OUTPUT_BYTES
 
+    def run_diagnostic(self, arguments: list[str]) -> android.CommandResult:
+        # Reuse the local-server/time-bounded runner with a smaller per-command
+        # text budget while preserving its cumulative diagnostic budget.
+        previous = self.remaining
+        allowance = min(previous, MAX_DIAGNOSTIC_OUTPUT_BYTES)
+        self.remaining = allowance
+        try:
+            return self.run(arguments)
+        finally:
+            self.remaining = previous - (allowance - self.remaining)
+
     def run_binary(self, arguments: list[str], expected_bytes: int) -> android.CommandResult:
         if not 0 < expected_bytes <= min(MAX_BINARY_CALL_BYTES, self.binary_remaining):
             raise RangeExportError("Binary ADB read exceeds its per-call or cumulative limit")
@@ -226,6 +238,7 @@ class RangeAdbRunner(existing.ExportAdbRunner):
             raise RangeExportError(f"Could not start ADB: {android.diagnostic(str(error))}") from error
         limits = (expected_bytes, min(MAX_BINARY_STDERR_BYTES, self.stderr_remaining))
         buffers = [bytearray(), bytearray()]
+        observed = [0, 0]
         overflow = threading.Event()
 
         def drain(stream, index):
@@ -234,6 +247,7 @@ class RangeAdbRunner(existing.ExportAdbRunner):
                     block = stream.read(BLOCK_BYTES)
                     if not block:
                         break
+                    observed[index] += len(block)
                     allowed = min(len(block), limits[index] - len(buffers[index]))
                     buffers[index].extend(block[:allowed])
                     if allowed != len(block):
@@ -269,15 +283,19 @@ class RangeAdbRunner(existing.ExportAdbRunner):
                 thread.join(timeout=2)
             self.binary_remaining -= len(buffers[0])
             self.stderr_remaining -= len(buffers[1])
+        received = (f"at least {observed[0]}" if observed[0] > limits[0] else str(observed[0]))
+        counts = (f"exit={process.returncode}; expected_stdout_bytes={expected_bytes}; "
+                  f"received_stdout_bytes={received}; local_stderr_bytes={observed[1]}")
+        detail = android.diagnostic(bytes(buffers[1]))[:512] or "no local ADB diagnostic returned"
         if any(thread.is_alive() for thread in threads):
-            raise RangeExportError("Binary ADB pipes did not close within the command limit")
+            raise RangeExportError(f"Binary ADB pipes did not close within the command limit ({counts}); {detail}")
         if timed_out:
-            raise RangeExportError("Binary ADB command timed out after 60 seconds")
+            raise RangeExportError(f"Binary ADB command timed out after 60 seconds ({counts}); {detail}")
         if overflow.is_set():
-            raise RangeExportError("Binary ADB stdout or stderr exceeded its bounded limit")
+            raise RangeExportError(f"Binary ADB stdout or stderr exceeded its bounded limit ({counts}); {detail}")
         result = android.CommandResult(process.returncode, bytes(buffers[0]), bytes(buffers[1]))
         if result.returncode or len(result.stdout) != expected_bytes:
-            raise RangeExportError(f"Binary ADB read failed or returned an unexpected byte count; {android.diagnostic(result.stderr)[:512]}")
+            raise RangeExportError(f"Binary ADB read failed or returned an unexpected byte count ({counts}); {detail}")
         return result
 
 
@@ -319,6 +337,34 @@ def dd_command(read: dict) -> str:
     return f"dd if={shlex.quote(remote)} bs={BLOCK_BYTES} skip={skip} count={count} 2>/dev/null"
 
 
+def diagnostic_dd_command(read: dict) -> str:
+    """Read the same bounded span into /dev/null, returning remote status only."""
+    command = dd_command(read).removesuffix(" 2>/dev/null")
+    return (command + " of=/dev/null 2>&1; ssra_range_dd_status=$?; "
+            "printf '__ssra_range_dd_exit=%s\\n' \"$ssra_range_dd_status\"")
+
+
+def _diagnose_remote_read(runner, serial: str, read: dict) -> str:
+    # This is one diagnostic after a failed export, never a transport fallback.
+    # It reads only the failed <=1 MiB span, discards payload bytes remotely and
+    # cannot rescue or publish the failed export.
+    try:
+        result = runner.run_diagnostic(["-s", serial, "shell", diagnostic_dd_command(read)])
+    except (RangeExportError, existing.ExportError, android.InventoryError, OSError) as error:
+        return f"Same-range remote diagnostic transport failed: {android.diagnostic(str(error))[:512]}"
+    if len(result.stdout) + len(result.stderr) > MAX_DIAGNOSTIC_OUTPUT_BYTES:
+        return "Same-range remote diagnostic exceeded its 64 KiB text limit"
+    remote_text = result.stdout.decode("utf-8", "replace")
+    markers = re.findall(r"(?:^|\n)__ssra_range_dd_exit=([0-9]{1,3})\r?(?=\n|$)", remote_text)
+    remote_exit = markers[0] if len(markers) == 1 and int(markers[0]) <= 255 else "unknown (missing or invalid marker)"
+    remote_text = re.sub(r"(?:^|\n)__ssra_range_dd_exit=[^\r\n]*", "", remote_text)
+    remote_detail = android.diagnostic(remote_text)[:512] or "no remote dd diagnostic returned"
+    local_detail = android.diagnostic(result.stderr)[:256] or "none"
+    return (f"Same-range diagnostic: shell_exit={result.returncode}; remote_dd_exit={remote_exit}; "
+            f"remote_output_bytes={len(result.stdout)}; local_stderr_bytes={len(result.stderr)}; "
+            f"remote_detail={remote_detail}; local_ADB_detail={local_detail}")
+
+
 def export_ranges(plan_path: Path, output: Path, adb: Path | None, serial: str, runner=None) -> dict:
     output = Path(output)
     if os.path.lexists(output):
@@ -350,10 +396,22 @@ def export_ranges(plan_path: Path, output: Path, adb: Path | None, serial: str, 
         readback = {}
         for ordinal, read in enumerate(reads):
             _check_chunk(runner, serial, read)
-            result = runner.run_binary(["-s", serial, "exec-out", dd_command(read)], read["bytes"])
-            if (result.returncode or len(result.stdout) != read["bytes"]
-                    or len(result.stderr) > MAX_BINARY_STDERR_BYTES):
-                raise RangeExportError("Binary ADB read failed or returned an unexpected bounded byte count")
+            try:
+                result = runner.run_binary(["-s", serial, "exec-out", dd_command(read)], read["bytes"])
+                if (result.returncode or len(result.stdout) != read["bytes"]
+                        or len(result.stderr) > MAX_BINARY_STDERR_BYTES):
+                    detail = android.diagnostic(result.stderr)[:512] or "no local ADB diagnostic returned"
+                    raise RangeExportError(
+                        "Binary ADB read failed or returned an unexpected bounded byte count "
+                        f"(exit={result.returncode}; expected_stdout_bytes={read['bytes']}; "
+                        f"received_stdout_bytes={len(result.stdout)}; local_stderr_bytes={len(result.stderr)}); {detail}"
+                    )
+            except RangeExportError as error:
+                context = (f"Read {ordinal + 1}/{len(reads)} on {serial}: "
+                           f"chunk={read['chunk_filename']}; physical_offset={read['physical_offset']}; "
+                           f"skip_blocks={read['skip_blocks']}; count_blocks={read['count_blocks']}")
+                diagnostic = _diagnose_remote_read(runner, serial, read)
+                raise RangeExportError(f"{context}. {error}. {diagnostic}") from error
             readback[ordinal] = result.stdout
             _check_chunk(runner, serial, read)
             read["actual_span_sha256"] = hashlib.sha256(result.stdout).hexdigest()

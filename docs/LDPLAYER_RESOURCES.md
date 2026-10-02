@@ -321,3 +321,28 @@ aligned bytes ออกก่อนบรรจุ ZIP ตรวจ byte count �
 การคัดลอก แต่ยังไม่ตรวจ whole-chunk hash เพราะไม่ได้อ่านทั้ง chunk
 decoded FHSH ตรวจภายหลังบนคลาวด์เมื่อคลาย stored blobs และไม่ execute resources
 ตัว manifest pin/hash ใช้ยืนยันชุดข้อมูล ไม่ใช่ CDN signature
+
+### เมื่อ binary read คืนจำนวนไบต์ไม่ตรง
+
+ผู้ใช้รันขั้น range export แล้วหยุดที่ `Binary ADB read failed or returned an
+unexpected byte count` ยังไม่ได้รับ ZIP ชุดนี้ ข้อความรุ่นแรกไม่แสดง return code
+หรือจำนวนไบต์ที่ได้รับ และซ่อน error ของ `dd` ฝั่ง Android จึงยังบอกสาเหตุไม่ได้
+แม้ shell และการ pull ZIP ชุดก่อนหน้าจะทำงานแล้ว
+
+helper รุ่นปัจจุบันแสดง chunk/offset, ADB return code และ expected/received bytes
+เมื่ออ่านไม่ครบ จะตรวจ `dd` อีกครั้งเฉพาะช่วงเดิมผ่าน Android shell โดยส่ง payload
+ไป `/dev/null` และแสดงเพียง bounded diagnostic กับ exit status ไม่แสดง binary
+ของเกม ไม่เพิ่ม resource ที่เลือก และยังหยุดโดยไม่ publish ZIP ที่ข้อมูลไม่ครบ
+รันบล็อกด้านบนอีกครั้งเพื่อดาวน์โหลด helper ใหม่ แล้วส่งข้อความ error ทั้งบรรทัด
+ถ้ายังหยุดอยู่ ไม่ต้องสร้าง inventory หรือส่ง core/English ZIPs ซ้ำ
+
+ตรวจว่า ADB รุ่นนั้นรองรับ raw exec service ได้ด้วยข้อความ ASCII:
+
+```powershell
+& "D:\LDPlayer\LDPlayer14\adb.exe" version
+& "D:\LDPlayer\LDPlayer14\adb.exe" -P 5037 -s "emulator-5554" exec-out "echo exec-out-ok"
+```
+
+ผลที่คาดสำหรับบรรทัดที่สองคือ `exec-out-ok` การผ่าน probe นี้ยังไม่ยืนยันว่าอ่าน
+binary ranges ได้ครบ อย่าใช้ PowerShell pipeline หรือ `>` เพื่อบันทึก binary
+จาก ADB เพราะ Windows PowerShell อาจแปลง bytes ให้ใช้ Python helper เป็นผู้รับ bytes

@@ -46,7 +46,8 @@ def fixture():
 
 class FakeRunner:
     def __init__(self, manifest, chunks, *, corrupt_manifest=False, stat_failure=False,
-                 changed_after=False, binary_result=None, package_result=None):
+                 changed_after=False, binary_result=None, package_result=None,
+                 diagnostic_result=None, diagnostic_error=None):
         self.manifest = manifest
         self.chunks = chunks
         self.corrupt_manifest = corrupt_manifest
@@ -54,8 +55,11 @@ class FakeRunner:
         self.changed_after = changed_after
         self.binary_result = binary_result
         self.package_result = package_result
+        self.diagnostic_result = diagnostic_result
+        self.diagnostic_error = diagnostic_error
         self.calls = []
         self.binary_calls = []
+        self.diagnostic_calls = []
 
     def run(self, arguments, **limits):
         self.calls.append((arguments, limits))
@@ -93,6 +97,12 @@ class FakeRunner:
         if match.group(5) is None:
             data += b"synthetic records in/out\n"
         return android.CommandResult(0, data)
+
+    def run_diagnostic(self, arguments):
+        self.diagnostic_calls.append(arguments)
+        if self.diagnostic_error is not None:
+            raise self.diagnostic_error
+        return self.diagnostic_result or android.CommandResult(0, b"synthetic records in/out\n__ssra_range_dd_exit=0\n")
 
 
 class FakeProcess:
@@ -159,6 +169,7 @@ class SSRARangeExportTests(unittest.TestCase):
         self.assertEqual(result["aligned_chunk_readback_bytes"], 135_552)
         self.assertEqual(result["total_transfer_bytes"], len(self.manifest) + 135_552)
         self.assertEqual(len(runner.binary_calls), 2)
+        self.assertEqual(runner.diagnostic_calls, [])
         path = self.output / export.PACK_NAME
         self.assertEqual(result["sha256"], hashlib.sha256(path.read_bytes()).hexdigest())
         with zipfile.ZipFile(path) as archive:
@@ -253,6 +264,56 @@ class SSRARangeExportTests(unittest.TestCase):
                 self.run_export(runner)
             self.assert_clean()
 
+    def test_empty_raw_read_shows_counts_context_and_same_range_remote_status(self):
+        runner = FakeRunner(self.manifest, self.chunks, binary_result=android.CommandResult(0, b""))
+        with self.assertRaises(export.RangeExportError) as raised:
+            self.run_export(runner)
+        message = str(raised.exception)
+        self.assertIn("Read 1/2 on emulator-5554", message)
+        self.assertIn("chunk=base_b00_0.ssrc; physical_offset=0; skip_blocks=0; count_blocks=2", message)
+        self.assertIn("exit=0; expected_stdout_bytes=70016; received_stdout_bytes=0", message)
+        self.assertIn("no local ADB diagnostic returned", message)
+        self.assertIn("shell_exit=0; remote_dd_exit=0", message)
+        self.assertEqual(len(runner.binary_calls), 1)
+        self.assertEqual(len(runner.diagnostic_calls), 1)
+        diagnostic = runner.diagnostic_calls[0]
+        self.assertEqual(diagnostic[:3], ["-s", "emulator-5554", "shell"])
+        self.assertEqual(len(diagnostic), 4)
+        self.assertIn("bs=65536 skip=0 count=2 of=/dev/null 2>&1", diagnostic[-1])
+        self.assertNotIn("2>/dev/null", diagnostic[-1])
+        self.assert_clean()
+
+    def test_remote_dd_failure_is_reported_without_exposing_binary_or_retrying(self):
+        runner = FakeRunner(self.manifest, self.chunks, binary_result=android.CommandResult(0, b""),
+                            diagnostic_result=android.CommandResult(0, b"dd: Permission denied\n__ssra_range_dd_exit=1\n"))
+        with self.assertRaises(export.RangeExportError) as raised:
+            self.run_export(runner)
+        self.assertIn("remote_dd_exit=1", str(raised.exception))
+        self.assertIn("remote_detail=dd: Permission denied", str(raised.exception))
+        self.assertEqual(len(runner.binary_calls), 1)
+        self.assertEqual(len(runner.diagnostic_calls), 1)
+        self.assert_clean()
+
+    def test_secondary_transport_failure_never_hides_original_raw_failure(self):
+        for options in ({"diagnostic_result": android.CommandResult(1, b"", b"error: closed")},
+                        {"diagnostic_error": export.existing.ExportError("ADB command timed out after 60 seconds")}):
+            runner = FakeRunner(self.manifest, self.chunks,
+                                binary_result=android.CommandResult(9, b"", b"local raw service failed"), **options)
+            with self.subTest(options=options), self.assertRaises(export.RangeExportError) as raised:
+                self.run_export(runner)
+            message = str(raised.exception)
+            self.assertIn("exit=9; expected_stdout_bytes=70016; received_stdout_bytes=0", message)
+            self.assertIn("local raw service failed", message)
+            if "diagnostic_result" in options:
+                self.assertIn("shell_exit=1; remote_dd_exit=unknown", message)
+                self.assertIn("local_ADB_detail=error: closed", message)
+            else:
+                self.assertIn("Same-range remote diagnostic transport failed", message)
+                self.assertIn("timed out", message)
+            self.assertEqual(len(runner.binary_calls), 1)
+            self.assertEqual(len(runner.diagnostic_calls), 1)
+            self.assert_clean()
+
     def test_existing_output_and_launcher_are_preserved_without_adb_commands(self):
         self.output.mkdir()
         marker = self.output / "keep.txt"
@@ -331,6 +392,12 @@ class SSRARangeExportTests(unittest.TestCase):
         self.assertTrue(unredirected.stdout.startswith(data))
         self.assertGreater(len(unredirected.stdout), len(data))
         self.assertEqual(redirected.stdout, data)
+        with patch.object(export, "RESOURCE_ROOT", str(resource_root)):
+            diagnostic_command = export.diagnostic_dd_command(read)
+        diagnostic = subprocess.run([shutil.which("sh"), "-c", diagnostic_command], **kwargs)
+        self.assertEqual(diagnostic.returncode, 0)
+        self.assertIn(b"__ssra_range_dd_exit=0\n", diagnostic.stdout)
+        self.assertNotIn(data, diagnostic.stdout)
 
     def test_binary_runner_uses_local_server_and_retains_exact_binary_stdout(self):
         data = b"\x00\xff\r\n" + bytes(range(256))
@@ -354,6 +421,30 @@ class SSRARangeExportTests(unittest.TestCase):
         runner = export.RangeAdbRunner(self.adb)
         with self.assertRaisesRegex(export.RangeExportError, "per-call"):
             runner.run_binary([], export.MAX_BINARY_CALL_BYTES + 1)
+
+    def test_binary_runner_reports_empty_or_short_counts_without_binary_preview(self):
+        for body in (b"", b"private payload"):
+            process = FakeProcess(body)
+            with self.subTest(length=len(body)), patch.object(export.subprocess, "Popen", return_value=process):
+                with self.assertRaises(export.RangeExportError) as raised:
+                    export.RangeAdbRunner(self.adb).run_binary(["-s", "emulator-5554", "exec-out", "dd fixed"], 100)
+            message = str(raised.exception)
+            self.assertIn(f"exit=0; expected_stdout_bytes=100; received_stdout_bytes={len(body)}", message)
+            self.assertIn("no local ADB diagnostic returned", message)
+            self.assertNotIn("private payload", message)
+
+    def test_diagnostic_command_budget_is_bounded_and_preserves_cumulative_limit(self):
+        runner = export.RangeAdbRunner(self.adb)
+        previous = runner.remaining
+        process = FakeProcess(b"__ssra_range_dd_exit=0\n")
+        with patch.object(export.subprocess, "Popen", return_value=process):
+            result = runner.run_diagnostic(["-s", "emulator-5554", "shell", "diagnostic fixture"])
+        self.assertEqual(runner.remaining, previous - len(result.stdout))
+        overflow = FakeProcess(bytes(export.MAX_DIAGNOSTIC_OUTPUT_BYTES + 1))
+        with patch.object(export.subprocess, "Popen", return_value=overflow):
+            with self.assertRaises(export.existing.ExportError):
+                runner.run_diagnostic(["-s", "emulator-5554", "shell", "diagnostic fixture"])
+        self.assertEqual(runner.remaining, previous - len(result.stdout) - export.MAX_DIAGNOSTIC_OUTPUT_BYTES)
 
 
 if __name__ == "__main__":
