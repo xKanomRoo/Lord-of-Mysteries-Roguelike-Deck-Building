@@ -8,9 +8,9 @@ Chaos Zero Nightmare เพราะไฟล์ XAPK ที่แนบเก�
 ชื่อไฟล์ `1.0.811` เป็นเพียงชื่อไฟล์ที่ผู้ใช้ส่งมา ไม่ได้ยืนยันว่าเป็นเวอร์ชันล่าสุด
 ดู [สถานะหลักฐาน](docs/EVIDENCE_STATUS.md)
 
-ได้รับรายงาน outer inventory จากผู้ใช้แล้ว พบ APK ย่อย 11 ไฟล์ แต่การอ่านย่อย
-ล้มเหลวจากข้อผิดพลาดโฟลเดอร์ temp บน Windows ซึ่งแก้แล้วในเครื่องมือรุ่นปัจจุบัน
-ยังต้องรันใหม่ก่อนสรุป engine หรือข้อมูล UI ดู [ผลตรวจรายงาน](docs/research/CHAOS_OUTER_REPORT.md)
+ได้รับรายงานรอบใหม่จากผู้ใช้แล้ว อ่าน APK ย่อย 11 ไฟล์ได้โดยไม่มี read error
+รวม 1,417 entries พบไฟล์ฉาก `.csb` 18 ไฟล์สำหรับตรวจต่อ ยังไม่ได้ decode layout
+หรือยืนยัน engine/กฎเกม ดู [ผลตรวจรายงาน](docs/research/CHAOS_NESTED_REPORT.md)
 
 ![ภาพต้นแบบที่รันจริงใน Chromium](docs/images/prototype-desktop.png)
 
@@ -55,6 +55,9 @@ python tools/analyze_apk.py /path/to/reference.xapk \
 ตรวจ `--help` ก่อนใช้ตัวเลือกเพิ่มเติม เครื่องมืออ่านแบบ static ไม่รันไฟล์เกม
 รายงานระบุสิ่งที่เห็นจริงและสิ่งที่ยังสรุปไม่ได้ อ่านขั้นตอนรับไฟล์ใหญ่และข้อจำกัด
 ที่ [APK analysis](docs/APK_ANALYSIS.md)
+
+เมื่อมีรายงานแล้ว ใช้ [research pack](docs/RESEARCH_PACK.md) รวมเฉพาะ bootstrap
+resources ให้เล็กกว่า 30 MiB พร้อม source hashes เพื่อส่งมาตรวจต่อโดยไม่ส่งทั้งเกม
 
 ## ให้ Codex ใช้ lore แบบออฟไลน์
 

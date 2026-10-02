@@ -5,8 +5,10 @@
 | Repository เริ่มต้น | ตรวจแล้ว | checkout ว่าง ไม่มี commit และ GitHub ไม่คืน refs |
 | ไฟล์ที่ผู้ใช้แนบ | รับเข้าเครื่องไม่ได้ | `Chaos+Zero+Nightmare_1.0.811_APKPure.xapk`; เครื่องมือรับไฟล์จำกัด 32 MiB |
 | เวอร์ชันล่าสุดของเกม | ยังไม่ยืนยัน | ชื่อไฟล์อย่างเดียวไม่ยืนยัน release ล่าสุด |
-| รายการไฟล์ชั้นนอก | ได้รับรายงานจากผู้ใช้ | 13 entries มี APK ย่อย 11 ไฟล์; ดู docs/research/CHAOS_OUTER_REPORT.md |
-| Engine, assets, UI, กฎจาก APK ย่อย | ยังไม่ทราบ | รายงานอ่าน APK ย่อยล้มเหลวทั้ง 11 ไฟล์ด้วย FileNotFoundError |
+| รายการไฟล์ชั้นนอก | ได้รับรายงานจากผู้ใช้ | 13 entries มี APK ย่อย 11 ไฟล์ |
+| รายการใน APK ย่อย | ได้รับรายงานรอบใหม่ | อ่าน APK ย่อยครบ 11, รวม 1,417 entries, errors ว่าง; ดู docs/research/CHAOS_NESTED_REPORT.md |
+| Engine และกฎเกม | ยังไม่ทราบ | ไม่มี supported engine hint; ไม่มีข้อมูลกฎที่ decode แล้ว |
+| UI resources | มีชื่อไฟล์สำหรับตรวจต่อ | พบ .csb 18 ไฟล์ เช่น scene_title.csb แต่ยังไม่อ่าน layout |
 | กฎต้นแบบใน repository นี้ | งานออกแบบใหม่ | source และ tests ใน `src/`, `tests/` |
 | ภาพและข้อความต้นแบบ | งานออกแบบใหม่ | CSS/SVG ใน source ไม่ได้คัดลอก asset จากเกม |
 | lore ตัวอย่าง | งานออกแบบใหม่ | manifest ระบุ original design ไม่ใช่ verified canon |
@@ -36,4 +38,8 @@ Tests ของเครื่องมือใช้ ZIP/APK ขนาดเ�
 ข้อผิดพลาด Windows ที่พบจากรายงาน: เครื่องมือใช้ `/tmp` แบบเจาะจง ทำให้สร้าง
 temporary file ไม่ได้ รุ่นแก้ไขให้ Python เลือก temp directory ของระบบ และบันทึก
 read failure ใน `errors` พร้อม `analysis_status: incomplete` และ exit code 1
-การแก้ไขผ่าน regression fixtures แล้ว แต่ยังต้องรัน XAPK จริงบน Windows อีกครั้ง
+การแก้ไขผ่าน regression fixtures และได้รับรายงานผู้ใช้รอบใหม่ตามรายละเอียดด้านล่าง
+
+อัปเดตจากรายงานผู้ใช้รอบสอง: `analysis_status: completed`, APK ย่อยอ่านได้ทั้ง 11
+และไม่มี read errors แสดงว่าอุปสรรคการอ่าน nested APK รอบแรกผ่านแล้วในรายงานผู้ใช้
+คำว่า completed หมายถึง inventory ตามขอบเขต static ไม่ใช่ decode UI/binary/game rules ครบ
