@@ -38,6 +38,10 @@ bash tools/build_android.sh
 wireframe ที่เลือกฉาก/ตรวจ node ได้โดยไม่รันเกม ดู [ผลวิเคราะห์ bootstrap](docs/research/CHAOS_BOOTSTRAP_ANALYSIS.md)
 และ [วิธีเปิด wireframe บน Windows](docs/BOOTSTRAP_REPLAY.md)
 
+มีภาพจริงที่ถอดแล้ว 108 textures พร้อม PNG เดิม 3 และ SCSP/atlas 7 ชุด
+ดู [รายการภาพจริงและช่องว่างงานภาพของเกมเรา](docs/REFERENCE_VISUAL_RESULTS.md)
+native รุ่นปัจจุบันยังใช้ procedural placeholder; จำนวนการ์ดไม่ได้หมายถึงจำนวนภาพประกอบ
+
 ## ต้นแบบเว็บเดิมและเครื่องมือวิจัย
 
 ![ต้นแบบเว็บเดิมที่รันจริงใน Chromium](docs/images/prototype-desktop.png)

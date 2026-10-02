@@ -29,6 +29,12 @@ not create a Git worktree unless the user explicitly requests one.
   optional cloud protocol. Use task-specific XDG directories under `.local/`:
   restricted HOME is not writable. Native viewport screenshots are not Android
   hardware screenshots; APK signature/manifest checks are not device launch tests.
+- Read docs/REFERENCE_VISUAL_RESULTS.md before visual design work. Recovered
+  reference pictures exist: deliver visual evidence, not only counts. Native
+  procedural placeholders are an incomplete art pipeline, not absence of source
+  images. Card definitions are not illustrations; engine tests do not establish
+  artistic quality. Clearly distinguish an image, atlas, composed rig, concept,
+  runtime screenshot and manifest-only resource when reporting visual results.
 - Cloud saves require the user's own Supabase project. Read docs/ONLINE_BACKEND.md;
   never include service_role/sb_secret keys in an APK or log account/session values.
   Public cloud config, keystores and sessions stay outside Git. Online backup is

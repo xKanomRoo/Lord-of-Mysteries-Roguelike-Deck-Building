@@ -21,12 +21,13 @@
 | Card/battle range export | ได้รับและตรวจ ZIP แล้ว | source indexประกาศToybox backend; 18payloads622,458stored/1,342,080decodedbytesผ่านCRC/SHA/manifestrows/Zstd/FHSH; surrounding span/fullchunk hashes และ exporter scope assertions ยังไม่ independently verified |
 | Selected DB shards | อ่านแปด shards ครบ | 2,691rows/5,780records; source-pinned wrapper/schema/index/bucket/fullcoverageผ่าน; trailer38bytesตรวจตรงแต่purposeunknown; fulltablesไม่commit |
 | Card/hand UI | อ่านห้าฉากครบ documented subset | 683nodes/682WidgetOptions/unsupportedTileSprite1; cardroot0x0จริงและdiagramviewportinferred; handbranches1–13เป็นsavedalternatives; fullHUD/animation/assetsยังไม่ยืนยัน |
-| Texture images | ถอด PNG ได้ 108 ไฟล์ | SCT1 RGB565+A8 2; SCT2 ASTC 106; ไม่ใช่ screenshot เกมที่ประกอบแล้ว |
+| Texture images | ถอด PNG ได้ 108 ไฟล์ และ PNG เดิม 3 | มี title illustration พร้อมตัวละคร, character-parts atlas และ lobby atlas จริง; ดู REFERENCE_VISUAL_RESULTS; ไม่ใช่ screenshot เกมที่ประกอบแล้ว |
+| SCSP / model art | รับ SCSP/atlas 7 ชุดใน bootstrap | ยังไม่ได้ประกอบ animation/rig; ไม่มี verified reconstructed 3D/Live2D; runtime portrait/card/model art มีชื่อใน manifest แต่ payloads ยังไม่ได้รับ |
 | กฎต้นแบบใน repository นี้ | งานออกแบบใหม่ | browser demo ใน `src/`; Godot native Android ใน `mobile/`; ไม่ใช่ recovered CZN runtime |
 | Native mobile content | original adaptation แยกจาก research | 3pathways/54cards/21enemies/12events36choices/12relics, 3acts12combats; source และ save schemas มี tests; ดู CONTENT_DESIGN |
 | นิยายจีนผู้ใช้ | อ่านและนำเข้า private corpus แล้ว | 2files17,812,214bytes strict/roundtripGB18030,13,904chunks; hashes/chapters/line offsets ตรวจจริง; edition/completenessไม่ยืนยัน; fulltext/indexไม่เข้าGit/APK |
 | Online player saves | source/schema พร้อม; ยังไม่มี live project | Supabase owner RLS + revision guards; localPG17.11ผ่าน18checks/Godotprotocol41; ผู้ใช้ต้องสร้างprojectและใส่publicconfigเอง |
-| ภาพและข้อความต้นแบบ | งานออกแบบใหม่ | CSS/SVG ใน source ไม่ได้คัดลอก asset จากเกม |
+| ภาพและข้อความต้นแบบ | งานออกแบบใหม่; native ยังเป็น placeholder art | CSS/SVG เดิมและ Godot procedural geometry; ยังไม่มี character/environment/card illustrations; จำนวน card definitions ไม่ใช่จำนวนภาพการ์ด |
 | lore ตัวอย่าง | งานออกแบบใหม่ | manifest ระบุ original design ไม่ใช่ verified canon |
 | เว็บไซต์ lore | การเข้าถึงถูกบล็อก | HEAD ผ่าน proxy ไป Wikipedia และ Webnovel ได้ `403 Forbidden` |
 | Package registry | เข้าถึงได้ | HTTPS ไป `registry.npmjs.org` ได้ 200 |
