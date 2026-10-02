@@ -1,5 +1,10 @@
 # Beyond the Gray Fog
 
+คุยกับทีมด้วยคำธรรมดาได้ตาม [คู่มือบอกเกมที่อยากเล่น](docs/MAKE_MY_GAME.md)
+ความต้องการเดิมอยู่ [PLAYER_VISION](docs/PLAYER_VISION.md), งานที่รับช่วงต่ออยู่
+[CURRENT_TASK](docs/design/CURRENT_TASK.md) และมี [ทีม/skills](docs/AGENT_TEAM.md)
+สำหรับด้านภาพ เกมเพลย์ เนื้อเรื่อง การพัฒนาและการตรวจผล
+
 เกม Android native อยู่ที่ `mobile/` ใช้ Godot Control UI และ GDScript engine
 สร้างเป็น APK ที่ติดตั้งและเล่นออฟไลน์ได้ พร้อม local save และ optional online backup
 เริ่มตาม [ขั้นถัดไปสำหรับมือถือและเซฟออนไลน์](docs/START_NEXT_ANDROID.md),

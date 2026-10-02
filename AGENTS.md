@@ -1,9 +1,35 @@
 # Working agreement for Codex
 
 This is an original occult roguelike deckbuilding prototype. Read README.md,
-docs/CODEX_WORKFLOW.md, and docs/EVIDENCE_STATUS.md before changing game design.
+docs/PLAYER_VISION.md, docs/design/CURRENT_TASK.md, docs/design/DECISIONS.md,
+docs/CODEX_WORKFLOW.md and docs/EVIDENCE_STATUS.md before changing game design.
 The task already runs in an isolated cloud checkout: use this checkout and do
 not create a Git worktree unless the user explicitly requests one.
+
+## Player-led work and skills
+
+For game wishes, feedback and workflow requests, use
+`.agents/skills/dream-game-director/SKILL.md`; then load only the relevant specialist
+skills mapped in `docs/AGENT_TEAM.md`. These repo-local files are available through
+normal file reads even when the runtime's skill catalog does not list their names.
+Use collaboration tools for useful parallel lanes when available; otherwise fulfill
+the same roles sequentially. Give each worker exact owned paths; only the coordinator
+updates shared PLAYER_VISION/DECISIONS/CURRENT_TASK memory.
+Workers return proposed questions to the coordinator. Only the coordinator asks
+the user, merging duplicates with at most one to three questions per work cycle.
+
+The user is a player without programming/design vocabulary. Convert everyday feedback
+into visible player outcomes, reuse confirmed preferences, and do authorized work.
+Routine reversible choices do not need repeated approval. Ask concise preferences
+only when they materially help, with concrete alternatives; never make the user fill
+a technical specification. Separate proposed taste choices from confirmed preferences.
+Read the latest correction and current task before expanding content: current art is
+still placeholder and the next game priority is an illustrated combat/character/card
+slice. A workflow-only request delivers the workflow honestly, without claiming it
+changed the APK. Engine tests/counts alone do not satisfy visual or fun requests.
+
+At handoff update the brief and task summary with actual outcomes, remaining gaps and
+the next player-visible priority; no transcript dumping or unrelated repository sprawl.
 
 ## Development
 
@@ -153,7 +179,8 @@ not create a Git worktree unless the user explicitly requests one.
   inferred. Saved labels/branch counts are not balance rules or hand limits.
   Complete AP/end-turn HUD, nested CSBs, reference art and runtime assembly
   are not supplied by this five-scene selection. All full research stays ignored.
-- Use original placeholder art and text for the playable demo. Import reference
+- Use original authored art and text for the playable game. Temporary placeholders
+  are scaffolding and do not satisfy visual requests. Import reference
   assets into the product only when the user has supplied appropriate permission.
 - Retrieve bounded source passages rather than putting entire novels into prompts.
   If no canon source verifies a claim, label it unverified or original design.
