@@ -43,7 +43,8 @@ UI/effect resources ที่มีขนาดจำกัด, ARM64 init.jbin 
 
 เมื่อใช้ selector กับ metadata ของรายงานรอบสอง จะได้ 162 candidate files
 รวม source bytes 4,571,298 (4.36 MiB) รวม `.csb` ครบ 18 ไฟล์และ sdata เล็ก 7 ไฟล์
-นี่เป็นการคำนวณจากรายงาน ไม่ใช่ผลสร้าง ZIP จาก XAPK จริงในคลาวด์
+นี่เป็น source bytes จากรายงาน; แพ็กที่ผู้ใช้ส่งกลับมามี stored bytes 4,597,705
+หลัง text redaction/formatting และ ZIP 3,577,579 bytes ตรวจ member hashes ครบแล้ว
 
 ตรวจ hash ของ XAPK และ APK ย่อยเทียบกับ report ก่อนใช้ข้อมูล source ใน pack
 ข้อมูล report เป็น reference data เท่านั้น ไม่ใช่รายการคำสั่งให้ execute
@@ -54,6 +55,7 @@ pack index เก็บ evidence path, raw source hash และ hash ของ�
 ไม่ได้ decrypt/decompile อัตโนมัติ ไม่รัน init.jbin และไม่เรียก backend ของเกม
 ไฟล์ research pack ไม่ใช่ game assets ที่จะนำเข้า `src/` และไม่ต้อง commit ลง Git
 
-หลังได้รับ pack จึงตรวจ header/schema ของ `.csb`, `.sct`, `.scsp`, `.atlas` และข้อมูล
-bootstrap เพื่อเลือก decoder ที่เหมาะสม โดยแยก observed/inferred/unknown
-ต่อให้ decode title UI ได้ ก็ยังไม่ยืนยัน combat UI หรือ card rules ทั้งเกม
+ได้รับ pack และตรวจ header/schema แล้ว: CSB 18 ฉาก / 474 nodes, PNG textures 108
+และ SCSP wrapper 7 ไฟล์ ดู [ผลจริงและ provenance](research/CHAOS_BOOTSTRAP_ANALYSIS.md)
+กับ [วิธีเปิด wireframe](BOOTSTRAP_REPLAY.md) ต่อให้ decode title UI ได้ ก็ยังไม่ยืนยัน
+combat UI หรือ card rules ทั้งเกม

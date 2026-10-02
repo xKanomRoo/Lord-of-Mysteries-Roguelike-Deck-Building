@@ -9,7 +9,9 @@ not create a Git worktree unless the user explicitly requests one.
 
 - Node 24.19.0 is the tested runtime; Node >=22.12 and <25 is supported.
 - Install with `npm ci`, build with `npm run build`, run with `npm run dev`.
-- Python 3.12 is tested; research tools use the standard library only.
+- Python 3.12 is tested; research tools use the standard library by default.
+  SCT2 PNG decoding is optional: `texture2ddecoder==1.0.6` in `.local/texture-venv`
+  with `tools/decode_texture.py --decode-astc`; do not add it to game dependencies.
 - `npm test` checks the game engine. `npm run test:python` checks research tools.
 - `npm run smoke` starts a temporary server and tests the actual UI with Chromium.
 - Run relevant existing tests when editing behavior, then build. A server PID or
@@ -23,17 +25,27 @@ not create a Git worktree unless the user explicitly requests one.
 - `tools/analyze_apk.py`: bounded static archive research, never runs game code.
 - `tools/create_research_pack.py`: hash-verified selected bootstrap resources for
   static inspection; pack output is ignored and never imported into the product.
+- `tools/read_research_pack.py`: verifies every packed member before unpacking.
+- `tools/decode_csb.py`: bounded documented Cocos Studio scene subset with offsets.
+- `tools/render_csb_wireframe.py`: approximate serialized layout diagrams, not runtime screenshots.
+- `tools/decode_texture.py`: bounded SCT/SCSP inspection and SCT1 PNG decoding.
 - `tools/lore_index.py`: offline local text retrieval with source metadata.
 - `lore/sources.json`: provenance for imported lore; never call original writing
   verified novel canon.
 
 ## Evidence and source handling
 
-- The raw reference XAPK is unavailable in this cloud task. The user's second
-  report inventories all 11 nested APKs without read errors (1,417 total entries).
-  Read docs/research/CHAOS_NESTED_REPORT.md. Bootstrap UI candidates include 18
-  .csb files; their layouts have not been decoded. Engine and gameplay remain
-  unknown. Never describe prototype rules as recovered Chaos Zero Nightmare rules.
+- The full reference XAPK is unavailable in this cloud task. The second report
+  inventories all 11 nested APKs (1,417 entries); the received bootstrap pack has
+  162 hash-verified members. Read docs/research/CHAOS_BOOTSTRAP_ANALYSIS.md.
+  All 18 CSB scenes were decoded to a documented subset (474 hierarchy nodes,
+  469 WidgetOptions; five custom TileSprite nodes unsupported). Cocos Studio
+  serialization and Cocos-related bootstrap APIs are observed. The exact complete
+  engine version, combat UI and game rules remain unknown. Never describe
+  prototype rules as recovered Chaos Zero Nightmare rules.
+- Layout coordinates are serialized local values. Runtime constraints, clipping,
+  custom widgets, animation and regional variants may change the final screen.
+  A texture atlas or wireframe is not a captured gameplay screenshot.
 - Distinguish observed facts, hypotheses, unknowns, and original design choices.
   Give archive path, hash and source provenance for facts recovered later.
 - Filename or engine hints are not proof of visual layout or complete gameplay.

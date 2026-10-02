@@ -1,5 +1,9 @@
 # รายงาน XAPK รอบสอง: nested inventory สำเร็จ
 
+เอกสารนี้บันทึกสิ่งที่ทราบตอนรับ inventory; ผลตรวจ bytes/layouts ภายหลังอยู่ใน
+[bootstrap analysis](CHAOS_BOOTSTRAP_ANALYSIS.md) ข้อความ unknown ด้านล่างเป็นสถานะ
+ของรอบนี้ ไม่ใช่ข้อสรุปล่าสุด
+
 แหล่งหลักฐานคือ `report.json` และ `summary.md` ที่ผู้ใช้รันบน Windows แล้วแนบมา
 ไฟล์ XAPK ต้นฉบับยังไม่มีในคลาวด์ จึงยังไม่ได้ตรวจ raw bytes หรือ hash ของ XAPK ซ้ำ
 

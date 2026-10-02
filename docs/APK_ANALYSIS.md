@@ -2,7 +2,13 @@
 
 เครื่องมือใน repository นี้สร้างรายการไฟล์และอ่านโครงสร้างข้อความที่มีขนาดจำกัดจาก APK/XAPK โดยไม่รันโค้ดเกม ใช้ Python standard library เท่านั้น จึงใช้บนคลาวด์ได้โดยไม่ต้องมี Android emulator
 
-**สถานะไฟล์จริง:** ไฟล์ต้นฉบับ `Chaos+Zero+Nightmare_1.0.811_APKPure.xapk` ยังรับเข้าเครื่องคลาวด์ไม่ได้เพราะขีดจำกัด 32 MiB รายงานผู้ใช้รอบสองอ่าน APK ย่อยทั้ง 11 ได้แล้ว รวม 1,417 entries และไม่พบ read errors ยังไม่มีข้อสรุป engine, UI layout หรือกฎเกม ดู [รายงานรอบสอง](research/CHAOS_NESTED_REPORT.md) ชื่อไฟล์ไม่ยืนยันว่าเป็นเวอร์ชันล่าสุดหรือยืนยันแหล่งที่มา Tests ใช้ archive ขนาดเล็กที่สร้างขึ้นเอง ไม่ใช่การ decode เกมจริง
+**สถานะไฟล์จริง:** full XAPK ยังรับเข้าเครื่องคลาวด์ไม่ได้เพราะขีดจำกัด 32 MiB
+รายงานผู้ใช้รอบสอง inventory APK ย่อยทั้ง 11 ได้แล้ว รวม 1,417 entries
+ต่อมาได้รับ bootstrap pack 162 files และตรวจ hashes ครบ อ่าน Cocos Studio 18 ฉาก
+/ 474 nodes และถอด textures 108 files ได้จริง ดู [ผล bootstrap](research/CHAOS_BOOTSTRAP_ANALYSIS.md)
+เวอร์ชัน 1.0.811 ยืนยันจาก manifest แต่ latest release, exact engine version,
+battle UI และกฎการ์ดยังไม่ยืนยัน Unit tests ใช้ข้อมูลจำลอง; actual-pack validation
+บันทึกแยกชัดเจน
 
 ## ใช้งานเมื่อไฟล์อยู่ในคลาวด์แล้ว
 

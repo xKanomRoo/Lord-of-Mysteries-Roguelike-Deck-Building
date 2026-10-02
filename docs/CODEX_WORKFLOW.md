@@ -33,6 +33,11 @@ Unity IL2CPP, bundle แบบเฉพาะ และ binary resources ต้�
 อย่ารันแอปที่แนบหรือเรียก backend ของเกมโดยอัตโนมัติ การวิจัย static และต้นแบบ
 ออฟไลน์ทำงานได้โดยไม่ใช้บัญชีผู้เล่น
 
+ผลที่มีแล้วสำหรับ task นี้: [bootstrap analysis](research/CHAOS_BOOTSTRAP_ANALYSIS.md)
+อ่าน Cocos Studio 18 ฉากและสร้าง wireframe ได้ ถอด texture 108 ไฟล์เป็น PNG แล้ว
+ใช้เป็นหลักฐาน title/download/modal UX ได้ แต่ยังไม่มี battle/card schema
+ทำซ้ำบน Windows ตาม [BOOTSTRAP_REPLAY.md](BOOTSTRAP_REPLAY.md)
+
 ## Prompt สำหรับงานถัดไป
 
 ```text

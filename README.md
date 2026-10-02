@@ -3,14 +3,15 @@
 ต้นแบบเกมเว็บแนว roguelike deckbuilding พร้อมเครื่องมือวิจัย APK/XAPK และฐานความรู้
 ออฟไลน์สำหรับ Codex พัฒนาต่อใน repository เดียวกัน
 
-**สถานะ:** กฎเกม ข้อความ และภาพในต้นแบบเป็นงานออกแบบใหม่ ยังไม่ได้ถอดกฎหรือ UI จาก
-Chaos Zero Nightmare เพราะไฟล์ XAPK ที่แนบเกินขีดจำกัดรับไฟล์ 32 MiB
-ชื่อไฟล์ `1.0.811` เป็นเพียงชื่อไฟล์ที่ผู้ใช้ส่งมา ไม่ได้ยืนยันว่าเป็นเวอร์ชันล่าสุด
+**สถานะ:** กฎเกม ข้อความ และภาพในต้นแบบเป็นงานออกแบบใหม่ ได้รับ bootstrap pack
+จาก Chaos Zero Nightmare แล้ว และอ่านโครงสร้าง UI ส่วนเปิดเกมได้ 18 ฉาก / 474 nodes
+ยังไม่มีหลักฐานฉากต่อสู้หรือกฎการ์ด เวอร์ชัน `1.0.811` ยืนยันจาก manifest แล้ว
+แต่ยังไม่ยืนยันว่าเป็น release ล่าสุด
 ดู [สถานะหลักฐาน](docs/EVIDENCE_STATUS.md)
 
-ได้รับรายงานรอบใหม่จากผู้ใช้แล้ว อ่าน APK ย่อย 11 ไฟล์ได้โดยไม่มี read error
-รวม 1,417 entries พบไฟล์ฉาก `.csb` 18 ไฟล์สำหรับตรวจต่อ ยังไม่ได้ decode layout
-หรือยืนยัน engine/กฎเกม ดู [ผลตรวจรายงาน](docs/research/CHAOS_NESTED_REPORT.md)
+แพ็กมีไฟล์ที่ตรวจ hash ครบ 162 ไฟล์ ยืนยันรูปแบบ Cocos Studio scene ได้ และสร้าง
+wireframe ที่เลือกฉาก/ตรวจ node ได้โดยไม่รันเกม ดู [ผลวิเคราะห์ bootstrap](docs/research/CHAOS_BOOTSTRAP_ANALYSIS.md)
+และ [วิธีเปิด wireframe บน Windows](docs/BOOTSTRAP_REPLAY.md)
 
 ![ภาพต้นแบบที่รันจริงใน Chromium](docs/images/prototype-desktop.png)
 

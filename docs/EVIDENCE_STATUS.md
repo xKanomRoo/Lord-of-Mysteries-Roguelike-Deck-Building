@@ -3,12 +3,14 @@
 | ประเด็น | สถานะ | หลักฐาน/ผลที่ตรวจได้ |
 |---|---|---|
 | Repository เริ่มต้น | ตรวจแล้ว | checkout ว่าง ไม่มี commit และ GitHub ไม่คืน refs |
-| ไฟล์ที่ผู้ใช้แนบ | รับเข้าเครื่องไม่ได้ | `Chaos+Zero+Nightmare_1.0.811_APKPure.xapk`; เครื่องมือรับไฟล์จำกัด 32 MiB |
-| เวอร์ชันล่าสุดของเกม | ยังไม่ยืนยัน | ชื่อไฟล์อย่างเดียวไม่ยืนยัน release ล่าสุด |
+| Full XAPK ที่ผู้ใช้แนบ | รับเข้าเครื่องไม่ได้ | เกิน 32 MiB; รับ bootstrap ZIP 3.41 MiB ภายหลังแล้ว |
+| เวอร์ชัน build | ยืนยัน 1.0.811 | manifest JSON และ binary Android manifest ตรงกัน; latest release ยังไม่ยืนยัน |
 | รายการไฟล์ชั้นนอก | ได้รับรายงานจากผู้ใช้ | 13 entries มี APK ย่อย 11 ไฟล์ |
 | รายการใน APK ย่อย | ได้รับรายงานรอบใหม่ | อ่าน APK ย่อยครบ 11, รวม 1,417 entries, errors ว่าง; ดู docs/research/CHAOS_NESTED_REPORT.md |
-| Engine และกฎเกม | ยังไม่ทราบ | ไม่มี supported engine hint; ไม่มีข้อมูลกฎที่ decode แล้ว |
-| UI resources | มีชื่อไฟล์สำหรับตรวจต่อ | พบ .csb 18 ไฟล์ เช่น scene_title.csb แต่ยังไม่อ่าน layout |
+| Scene format / engine evidence | ยืนยัน Cocos Studio format | documented CSParseBinary และ Cocos APIs; exact engine version ยังไม่ทราบ |
+| กฎเกม / combat UI | ยังไม่ทราบ | bootstrap ที่ได้รับไม่มี decoded battle/card rules |
+| UI layouts | อ่าน 18/18 ฉาก, 474 nodes | standard WidgetOptions 469; custom TileSprite 5 ไม่ถอด; wireframe เป็น serialized projection |
+| Texture images | ถอด PNG ได้ 108 ไฟล์ | SCT1 RGB565+A8 2; SCT2 ASTC 106; ไม่ใช่ screenshot เกมที่ประกอบแล้ว |
 | กฎต้นแบบใน repository นี้ | งานออกแบบใหม่ | source และ tests ใน `src/`, `tests/` |
 | ภาพและข้อความต้นแบบ | งานออกแบบใหม่ | CSS/SVG ใน source ไม่ได้คัดลอก asset จากเกม |
 | lore ตัวอย่าง | งานออกแบบใหม่ | manifest ระบุ original design ไม่ใช่ verified canon |
@@ -34,6 +36,10 @@
 
 Tests ของเครื่องมือใช้ ZIP/APK ขนาดเล็กที่สร้างขึ้นเอง ไม่ใช่ Chaos Zero Nightmare
 และไม่พิสูจน์ว่าอ่าน archive ของเกมจริงได้ครบ
+
+ผลข้อมูลจริงแยกต่างหาก: ตรวจ contents ของ bootstrap pack 162 members ครบ และ
+ถอด scenes/textures ตามขอบเขตข้างต้น ดู [ผลวิเคราะห์ bootstrap](research/CHAOS_BOOTSTRAP_ANALYSIS.md)
+ผลนี้ไม่ใช่การอ่าน full XAPK และยังไม่พิสูจน์ behavior ตอนรันเกม
 
 ข้อผิดพลาด Windows ที่พบจากรายงาน: เครื่องมือใช้ `/tmp` แบบเจาะจง ทำให้สร้าง
 temporary file ไม่ได้ รุ่นแก้ไขให้ Python เลือก temp directory ของระบบ และบันทึก
