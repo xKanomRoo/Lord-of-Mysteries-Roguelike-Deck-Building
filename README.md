@@ -66,6 +66,9 @@ resources ให้เล็กกว่า 30 MiB พร้อม source hashes
 
 **ขั้นถัดไปเมื่อเกมอยู่ใน LDPlayer:** [ตรวจ resource ที่ดาวน์โหลดไว้](docs/LDPLAYER_RESOURCES.md)
 เครื่องมือใช้ ADB บน Windows อ่านรายการชื่อ/ขนาดไฟล์ก่อนเลือกส่งมาตรวจ
+ได้รับ inventory ผู้ใช้แล้ว: 47 files / 7.56 GiB เลือก manifest, ARM64 และ
+English chunks 6 files สำหรับ [export สอง ZIP](docs/LDPLAYER_RESOURCES.md#export-resource-ที่เลือกจากรายงานนี้)
+ยังไม่ได้รับ contents ของไฟล์ชุดนี้
 อีกทางคือ [entry/config request](docs/SERVER_RESOURCES.md): ยืนยัน endpoint จาก
 native แล้ว แต่ request ในคลาวด์ถูก proxy ปฏิเสธก่อนถึงเกมเซิร์ฟเวอร์
 

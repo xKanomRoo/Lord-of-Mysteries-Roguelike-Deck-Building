@@ -7,7 +7,7 @@ Vite 7.3.6 จาก lockfile และ Chromium 151 บน Linux
 |---|---|
 | ติดตั้งด้วย `npm ci` | ผ่าน; hash ของ package-lock.json ก่อน/หลังตรงกัน |
 | `npm test` | ผ่าน 12 tests, ไม่มี skipped |
-| `npm run test:python` | ผ่าน 162 tests, ไม่มี skipped; รวม ADB inventory, native inventory, entry request, PLPcK, pack reader, CSB, LZ4/SCT/SCSP, optional ASTC, wireframe และ APK extraction |
+| `npm run test:python` | ผ่าน 181 tests, ไม่มี skipped; รวม ADB export/inventory, native inventory, entry request, PLPcK, pack reader, CSB, LZ4/SCT/SCSP, optional ASTC, wireframe และ APK extraction |
 | `npm run build` | ผ่าน; ได้ production bundle |
 | `npm run lore:build` และค้น `ritual memory` | ผ่าน; 1 original-design source, 2 chunks, source/hash/line refs |
 | `npm run smoke` | ผ่านใน Chromium จริง; ชนะสามห้องด้วย 50 การกระทำและเลือกสองรางวัล |
@@ -26,7 +26,9 @@ Vite 7.3.6 จาก lockfile และ Chromium 151 บน Linux
 | PLPcK | 11 tests ผ่าน; init.jbin จริงตรวจ 26 records และ complete nonoverlapping coverage 320,998 bytes; ไม่ได้คืน JS source |
 | RH01 samples | footer/native format ตรงกัน 7 files; original RSA signatures ผ่าน 7/7; SDK text configs 6 และ inner binary 1; ไม่ใช่ card database |
 | Entry request | 14 offline tests ผ่าน รวม upstream 403/incomplete body และ proxy CONNECT แยกกัน; actual cloud GET ครั้งเดียวถูก proxy CONNECT403 ก่อน response เกม |
-| LDPlayer inventory helper | 16 tests ผ่านกับ fake ADB/subprocess และ synthetic filesystem; ชื่อมี spaces/quotes/Unicode, limits, device selection, permission failures, find/stat failures และ generic resource DB metadata; ยังไม่รันบน Windows/Android toybox หรือ LDPlayer จริง |
+| LDPlayer inventory helper | 16 tests ผ่านกับ fake ADB/subprocess และ synthetic filesystem; ภายหลังได้รับ Windows report ผู้ใช้: SDK34, emulator-5554, external root47files/7.56GiB, private roots permission_denied; ไม่ใช่การรัน Windows บนคลาวด์ |
+| Selected resource exporter | 19 synthetic tests ผ่าน รวม malformed JSON/surrogate paths, transfer failures, size changes, bounds, source-report lineage และ preserving outputs; actual uploaded report ผ่าน validation; ยังไม่ได้รับ raw resources หรือทดสอบ pull บน Windows จริง |
+| Export ขนาดจริงด้วย fake ADB | 6 synthetic payloads มี sizes ตรง profile จริง; Core ZIP 25,785,250 bytes และ English ZIP 15,978,834 bytes; member/ZIP SHA และ source report SHA ตรวจตรง ทั้งสองไฟล์ต่ำกว่า30MiB; ไม่ใช่เกม assets จริง |
 | Wireframe หลัง native schema | สร้างใหม่ได้ 18 scenes / 474 nodes รวม geometry ของ TileSprite; browser check ที่รายงานด้านบนทำกับ bootstrap รุ่นก่อน native schema |
 | เว็บไซต์ lore | HEAD ถูก proxy ปฏิเสธ 403; draft domains ยังไม่ยืนยัน runtime propagation |
 

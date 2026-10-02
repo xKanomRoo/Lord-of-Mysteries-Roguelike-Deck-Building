@@ -15,7 +15,7 @@
 | sdata ตัวอย่าง | อ่าน RH01 wrapper 7 ไฟล์ | original RSA signatures ผ่าน 7/7; SDK text configs 6 และ inner binary 1; ไม่พบ card/battle schema |
 | Entry/config URL | ยืนยันจาก native references | GET `/cznlive` บน host ใน docs/SERVER_RESOURCES.md; ยังไม่มี asset manifest/CDN response |
 | Cloud entry request | ถูก proxy CONNECT ปฏิเสธ 403 | ยังไม่ถึง game server จึงไม่ทราบ upstream status/authentication |
-| LDPlayer resources | รอรายการไฟล์จากเครื่องผู้ใช้ | helper ตรวจ local ADB; ยังไม่ได้ตรวจจริงบน LDPlayer หรือยืนยัน storage permissions |
+| LDPlayer resources | ได้รับ inventory ผู้ใช้แล้ว | external root accessible 47 files / 7.56 GiB; manifest + 41 SSRC chunks; private roots permission_denied; ยังไม่มี raw resource bytes |
 | Texture images | ถอด PNG ได้ 108 ไฟล์ | SCT1 RGB565+A8 2; SCT2 ASTC 106; ไม่ใช่ screenshot เกมที่ประกอบแล้ว |
 | กฎต้นแบบใน repository นี้ | งานออกแบบใหม่ | source และ tests ใน `src/`, `tests/` |
 | ภาพและข้อความต้นแบบ | งานออกแบบใหม่ | CSS/SVG ใน source ไม่ได้คัดลอก asset จากเกม |

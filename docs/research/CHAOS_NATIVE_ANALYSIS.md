@@ -200,8 +200,12 @@ py .\tools\fetch_game_entry.py ".local/chaos-native/config.arm64_v8a.apk" --outp
 
 ## ขั้นต่อไปและหลักฐานที่ยังขาด
 
-สำรวจ filenames, sizes และสิทธิ์อ่านของ resource ใน LDPlayer ก่อน export
-เพื่อเลือก manifest, `main.jbin` หรือ resource container ตามรายการจริง
+ได้รับ [inventory จาก LDPlayer](CHAOS_LDPLAYER_INVENTORY.md) แล้ว:
+external root รายงาน accessible 47 files / 7.56 GiB; เลือก 6 files จัดสอง ZIP
+เพื่ออ่าน manifest และ ARM64/English resource candidates ต่อ
+ขั้น inventory จึงผ่านตามรายงานผู้ใช้ แต่ยังไม่ได้รับ raw resource bytes
+ขั้นถัดไปใช้ fixed resource exporter แล้วตรวจ paths/groups ภายใน manifest
+ก่อนเลือก chunk เพิ่มเติมสำหรับ card/battle resources ตามข้อมูลจริง
 คลาวด์นี้เข้าถึง emulator บน Windows โดยตรงไม่ได้ และ private app storage
 อาจอ่านไม่ได้ด้วย ADB ปกติ การเปิดถึง title screen อย่างเดียวไม่พิสูจน์ว่าโหลด
 ฉากต่อสู้ทุกฉากแล้ว ทำตาม [LDPLAYER_RESOURCES.md](../LDPLAYER_RESOURCES.md)

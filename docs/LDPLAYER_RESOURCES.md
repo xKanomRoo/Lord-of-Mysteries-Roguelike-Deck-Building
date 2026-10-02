@@ -96,6 +96,52 @@ roots อาจอยู่ในรายงาน แต่ไม่ได้�
 resources ที่รับมาจะใช้เป็น
 หลักฐาน static แยกจากภาพ/ข้อความใหม่ของเกมต้นแบบ
 
-บนคลาวด์ทดสอบ ADB helper ผ่าน 16 tests ด้วยอุปกรณ์และ filesystem จำลอง การเชื่อมต่อจริง,
-Android toybox commands และ storage permissions ใน LDPlayer ของผู้ใช้ยังรอ
-ผลรายงาน ขั้นนี้ยังไม่ยืนยันว่า export ไฟล์ resource ได้แล้ว
+บนคลาวด์ทดสอบ ADB helper ผ่าน 16 tests ด้วยอุปกรณ์และ filesystem จำลอง
+ภายหลังได้รับ inventory ที่ผู้ใช้สร้างบน Windows/Android SDK 34 แล้วตามส่วนถัดไป
+ผลนี้ไม่ได้เป็นการรัน Windows บนคลาวด์ และยังไม่ได้ตรวจ resource contents
+
+## Export resource ที่เลือกจากรายงานนี้
+
+ได้รับ inventory ผู้ใช้แล้ว: external files root อ่านรายการได้ 47 files / 7.56 GiB
+มี manifest และ resource chunks; private roots ยัง permission_denied
+ดู [หลักฐานจากรายงาน](research/CHAOS_LDPLAYER_INVENTORY.md)
+ขั้นนี้คัดลอกเพียง 6 files ที่เลือกผ่าน ADB ของเครื่องเดิม ใช้ report เดิมเพื่อ
+เทียบ paths/sizes และบันทึก source hash ไม่ต้องสร้าง inventory ซ้ำเมื่อไฟล์ไม่เปลี่ยน
+
+เปิด LDPlayer instance เดิมและ local ADB ค้างไว้ รันใน PowerShell:
+
+```powershell
+Set-Location -LiteralPath "C:\Users\MSi\Downloads\Lord-of-Mysteries-Roguelike-Deck-Building-main\Lord-of-Mysteries-Roguelike-Deck-Building-main"
+
+$runtimeTools = @("inventory_android_resources.py", "export_android_research.py")
+foreach ($toolFile in $runtimeTools) {
+  Invoke-WebRequest -Uri "https://raw.githubusercontent.com/xKanomRoo/Lord-of-Mysteries-Roguelike-Deck-Building/main/tools/$toolFile" -OutFile ".\tools\$toolFile"
+}
+
+py .\tools\export_android_research.py --adb "D:\LDPlayer\LDPlayer14\adb.exe" --report ".local/ldplayer-resources-v1/report.json" --output ".local/chaos-runtime-export-v1"
+
+if ($LASTEXITCODE -eq 0) {
+  Invoke-Item .\.local\chaos-runtime-export-v1
+}
+```
+
+paths ของ repository, ADB และ report ข้างต้นอิง screenshots/report ของผู้ใช้
+หากย้ายไฟล์ให้เปลี่ยน path ให้ตรง ถ้า output มีผลเก่าให้ใช้ชื่อใหม่ เช่น
+`chaos-runtime-export-v2` เครื่องมือจะไม่เขียนทับ directory เดิม
+
+แนบไฟล์สองรายการจากโฟลเดอร์ที่เปิด:
+
+- **chaos-runtime-core.zip**: manifest และ ARM64 chunk; payload ประมาณ 24.59 MiB
+- **chaos-runtime-lang-en.zip**: English chunks 4 files; payload ประมาณ 15.24 MiB
+
+แต่ละ ZIP มี `research-index.json` ซึ่งระบุ source report SHA-256, resource
+paths/sizes และ hash ของ bytes ที่คัดลอกจริง เครื่องมือตรวจ device/package,
+remote regular-file sizes, local limits และ ZIP size ก่อน publish ผลจาก staging
+การตรวจ size และ hash ของไฟล์ที่ copy ไม่ได้ยืนยันว่ามันตรงกับ original CDN
+manifest hash ซึ่งยังไม่ได้อ่าน
+ระหว่าง `adb pull` เครื่องมือเช็กขนาดไฟล์บน disk เป็นระยะ ขนาดอาจเกินชั่วคราว
+ระหว่างการตรวจได้ แต่ไฟล์ที่ขนาดไม่ตรงจะถูกปฏิเสธและล้าง staging ก่อน publish
+
+หาก pull ล้มเหลวหรือขนาดไม่ตรงให้ส่งข้อความ error การเปลี่ยน patch ระหว่าง
+inventory กับ export อาจทำให้ขนาดเปลี่ยนและต้องตรวจรายการใหม่
+ขั้นนี้ยังไม่ได้ execute หรือ decode scripts/resources และยังไม่พิสูจน์ข้อมูลการ์ด

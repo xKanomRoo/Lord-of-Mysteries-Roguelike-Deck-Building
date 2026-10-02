@@ -36,6 +36,8 @@ not create a Git worktree unless the user explicitly requests one.
   verified TLS and bounded response storage; read docs/SERVER_RESOURCES.md.
 - `tools/inventory_android_resources.py`: local ADB file inventory for the fixed
   game package, without pulling contents or changing emulator settings.
+- `tools/export_android_research.py`: copy only the six selected resource files
+  from the same local emulator into two bounded, hash-indexed research ZIPs.
 - `tools/decode_csb.py`: bounded documented Cocos Studio scene subset with offsets.
 - `tools/render_csb_wireframe.py`: approximate serialized layout diagrams, not runtime screenshots.
 - `tools/decode_texture.py`: bounded SCT/SCSP inspection and SCT1 PNG decoding.
@@ -77,6 +79,10 @@ not create a Git worktree unless the user explicitly requests one.
   docs/LDPLAYER_RESOURCES.md. The cloud cannot access that local emulator. Inventory
   accessible resource paths first; private storage may deny ADB access. Never
   include account databases, preferences or tokens in a resource export.
+  The received inventory reports 47 accessible external files / 7.56 GiB and
+  private-root permission failures. Read docs/research/CHAOS_LDPLAYER_INVENTORY.md;
+  raw manifest/chunk bytes have not arrived yet. Do not ask for the complete
+  external resource directory when selected packs suffice.
 - Use original placeholder art and text for the playable demo. Import reference
   assets into the product only when the user has supplied appropriate permission.
 - Retrieve bounded source passages rather than putting entire novels into prompts.
