@@ -6,6 +6,7 @@ import json
 import stat
 import tempfile
 import unittest
+from unittest.mock import patch
 import zipfile
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
@@ -53,6 +54,80 @@ class StaticAnalysisTests(unittest.TestCase):
         self.assertEqual(cards["text_analysis"]["top_level_keys"], ["cards"])
         self.assertEqual(cards["sha256"], hashlib.sha256(b'{"cards":[{"id":"synthetic_card"}]}').hexdigest())
         self.assertEqual(report["errors"], [])
+
+    def test_nested_apks_use_platform_temp_directory_when_posix_tmp_is_absent(self):
+        nested = make_zip([("lib/arm64-v8a/libunity.so", b"synthetic library")])
+        platform_temp = self.root / "platform-temp"
+        platform_temp.mkdir()
+        real_temporary_file = tempfile.TemporaryFile
+
+        def windows_like_tempfile(*args, **kwargs):
+            if kwargs.get("dir") == "/tmp":
+                raise FileNotFoundError("Synthetic Windows: POSIX /tmp does not exist")
+            return real_temporary_file(*args, **kwargs)
+
+        with patch("tempfile.tempdir", str(platform_temp)), patch(
+                "tools.analyze_apk.tempfile.TemporaryFile", side_effect=windows_like_tempfile):
+            report, _ = self.analyze([("base.apk", nested), ("config.arm64_v8a.apk", nested)])
+        self.assertEqual(len(report["archives"]), 3)
+        self.assertEqual(len(report["engine_hints"]), 2)
+        self.assertEqual(report["errors"], [])
+
+    def test_cli_reports_nested_io_failure_and_continues_outer_inventory(self):
+        archive = self.root / "synthetic.xapk"
+        nested = make_zip([("config.json", b"{}")])
+        archive.write_bytes(make_zip([
+            ("base.apk", nested),
+            ("manifest.json", b'{"package_name":"synthetic.example"}'),
+        ]))
+        output = self.root / "failed-nested-report"
+        with patch("tools.analyze_apk.tempfile.TemporaryFile", side_effect=FileNotFoundError(
+                "synthetic private temp path")), redirect_stdout(io.StringIO()):
+            result = main([str(archive), "--output", str(output)])
+        self.assertEqual(result, 1)
+        report = json.loads((output / "report.json").read_text())
+        self.assertEqual(report["analysis_status"], "incomplete")
+        self.assertEqual(report["entries"][0]["reason"], "nested_read_failed")
+        self.assertEqual(report["entries"][1]["status"], "inspected_text")
+        self.assertEqual(report["errors"][0]["error_type"], "FileNotFoundError")
+        self.assertIn("incomplete", (output / "summary.md").read_text())
+        self.assertNotIn("synthetic private temp path", json.dumps(report))
+
+    def test_cli_limit_skips_are_explicit_without_becoming_io_failures(self):
+        archive = self.root / "synthetic.xapk"
+        archive.write_bytes(make_zip([("base.apk", b"x" * (1024 * 1024 + 1))]))
+        output = self.root / "limited-report"
+        with redirect_stdout(io.StringIO()):
+            result = main([str(archive), "--output", str(output), "--max-nested-mib", "1"])
+        self.assertEqual(result, 0)
+        report = json.loads((output / "report.json").read_text())
+        self.assertEqual(report["analysis_status"], "completed_with_skips")
+        self.assertEqual(report["errors"], [])
+        self.assertEqual(report["entries"][0]["reason"], "member_size_limit")
+
+    def test_windows_default_output_stays_under_working_directory(self):
+        archive = self.root / "synthetic.apk"
+        archive.write_bytes(make_zip([("config.json", b"{}")]))
+        with patch("tools.analyze_apk.sys.platform", "win32"), patch(
+                "tools.analyze_apk.Path.cwd", return_value=self.root), redirect_stdout(io.StringIO()):
+            result = main([str(archive)])
+        self.assertEqual(result, 0)
+        reports = list((self.root / ".local" / "game-research").glob("*/report.json"))
+        self.assertEqual(len(reports), 1)
+        self.assertEqual(json.loads(reports[0].read_text())["analysis_status"], "completed")
+
+    def test_cli_text_read_failure_is_incomplete_and_sanitized(self):
+        archive = self.root / "synthetic.apk"
+        archive.write_bytes(make_zip([("config.json", b"{}")]))
+        output = self.root / "failed-text-report"
+        with patch.object(Analyzer, "_read", side_effect=OSError("synthetic private path")), \
+                redirect_stdout(io.StringIO()):
+            result = main([str(archive), "--output", str(output)])
+        self.assertEqual(result, 1)
+        report = json.loads((output / "report.json").read_text())
+        self.assertEqual(report["analysis_status"], "incomplete")
+        self.assertEqual(report["errors"][0]["reason"], "text_read_failed")
+        self.assertNotIn("synthetic private path", json.dumps(report))
 
     def test_godot_unreal_hints_and_no_filename_screen_inference(self):
         report, output = self.analyze([

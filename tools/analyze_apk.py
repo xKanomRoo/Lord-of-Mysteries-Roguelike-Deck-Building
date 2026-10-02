@@ -343,7 +343,8 @@ class Analyzer:
                             entry.update(status="skipped", reason=reason)
                             continue
                         try:
-                            with tempfile.TemporaryFile(prefix="apk-analysis-", dir="/tmp") as nested:
+                            # Python selects the platform's writable temporary directory.
+                            with tempfile.TemporaryFile(prefix="apk-analysis-") as nested:
                                 content_hash = self._read(archive, info, self.limits.max_nested_bytes, nested)
                                 entry.update(status="nested_archive", sha256=content_hash)
                                 if not self._scan(nested, entry_path, depth + 1, content_hash):
@@ -352,6 +353,9 @@ class Analyzer:
                                 NotImplementedError, EOFError) as error:
                             entry.update(status="skipped", reason="nested_read_failed",
                                          error_type=type(error).__name__)
+                            self.report["errors"].append({"evidence_path": entry_path,
+                                                          "reason": "nested_read_failed",
+                                                          "error_type": type(error).__name__})
                         continue
                     if info.filename.lower().endswith("resources.arsc"):
                         entry.update(status="binary_resource_table", reason="decoder_required")
@@ -380,6 +384,9 @@ class Analyzer:
                             NotImplementedError, EOFError, RecursionError) as error:
                         entry.update(status="skipped", reason="text_read_failed",
                                      error_type=type(error).__name__)
+                        self.report["errors"].append({"evidence_path": entry_path,
+                                                      "reason": "text_read_failed",
+                                                      "error_type": type(error).__name__})
                 archive_record["status"] = "inventoried"
                 return True
         except (ValueError, OSError, zipfile.BadZipFile, RuntimeError) as error:
@@ -398,6 +405,10 @@ class Analyzer:
         self.report["read_bytes"] = self.read_bytes
         counts = Counter(entry["status"] for entry in self.report["entries"])
         self.report["status_counts"] = dict(counts)
+        self.report["analysis_status"] = (
+            "incomplete" if self.report["errors"] else
+            "completed_with_skips" if counts.get("skipped") else "completed"
+        )
         return self.report
 
 
@@ -410,6 +421,7 @@ def markdown_summary(report: dict[str, Any]) -> str:
     lines = ["# Static APK/XAPK evidence", "",
              f"Input: {code(source['filename'])}", "",
              f"SHA-256: {code(source['sha256'])}", "",
+             f"Analysis status: {code(report.get('analysis_status', 'not_recorded'))}", "",
              f"Archive entries: {len(report['entries'])}; bytes read: {report['read_bytes']}", "",
              "## What this report establishes", "",
              "Archive paths and bounded text structure only. Engine matches are file-path hints.", "",
@@ -438,7 +450,7 @@ def markdown_summary(report: dict[str, Any]) -> str:
         lines.extend(["", "## Skipped entries", ""])
         lines.extend(f"- {reason}: {count}" for reason, count in sorted(reasons.items()))
     if report["errors"]:
-        lines.extend(["", "## Archive errors", ""])
+        lines.extend(["", "## Archive/read errors — analysis incomplete", ""])
         lines.extend(f"- {code(error['evidence_path'])}: {code(error['reason'])}"
                      for error in report["errors"])
     return "\n".join(lines) + "\n"
@@ -451,11 +463,19 @@ def positive_int(value: str) -> int:
     return number
 
 
+def default_report_root() -> Path:
+    """Keep cloud reports outside checkouts and local reports in an ignored path."""
+    if sys.platform != "win32" and Path("/workspace").is_dir():
+        return Path("/workspace/game-research")
+    return Path.cwd() / ".local" / "game-research"
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("archive", type=Path, help="APK, XAPK, APKS, or ZIP")
     parser.add_argument("--output", type=Path,
-                        help="new/empty report directory; default /workspace/game-research/<name>-<hash>")
+                        help="new/empty report directory; default /workspace/game-research on cloud, "
+                             ".local/game-research in the current directory elsewhere")
     parser.add_argument("--extract-text", action="store_true",
                         help="opt in to bounded, redacted UTF-8 JSON/XML/CSV/TSV/TXT copies")
     parser.add_argument("--max-text-mib", type=positive_int, default=1)
@@ -468,7 +488,7 @@ def main(argv: list[str] | None = None) -> int:
     if not path.is_file() or path.suffix.lower() not in ARCHIVE_EXTENSIONS:
         parser.error("input must be an existing .apk, .xapk, .apks, or .zip file")
     output = args.output.expanduser().resolve() if args.output else (
-        Path("/workspace/game-research") /
+        default_report_root() /
         (re.sub(r"[^A-Za-z0-9_.-]", "_", path.stem)[:70] + "-" + sha256_file(path)[:12]))
     if output.exists() and (not output.is_dir() or any(output.iterdir())):
         parser.error("output must be new or empty; existing research is never overwritten")
@@ -488,7 +508,8 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     print(f"Report: {output / 'report.json'}")
     print(f"Summary: {output / 'summary.md'}")
-    print(f"Inventoried {len(report['entries'])} entries; archive errors: {len(report['errors'])}.")
+    print(f"Analysis status: {report['analysis_status']}.")
+    print(f"Inventoried {len(report['entries'])} entries; archive/read errors: {len(report['errors'])}.")
     return 1 if report["errors"] else 0
 
 

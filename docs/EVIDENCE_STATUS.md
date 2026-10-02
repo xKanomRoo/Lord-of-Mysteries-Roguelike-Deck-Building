@@ -5,7 +5,8 @@
 | Repository เริ่มต้น | ตรวจแล้ว | checkout ว่าง ไม่มี commit และ GitHub ไม่คืน refs |
 | ไฟล์ที่ผู้ใช้แนบ | รับเข้าเครื่องไม่ได้ | `Chaos+Zero+Nightmare_1.0.811_APKPure.xapk`; เครื่องมือรับไฟล์จำกัด 32 MiB |
 | เวอร์ชันล่าสุดของเกม | ยังไม่ยืนยัน | ชื่อไฟล์อย่างเดียวไม่ยืนยัน release ล่าสุด |
-| Engine, assets, UI, กฎจาก XAPK จริง | ยังไม่ตรวจ | ไม่ได้อ่านแม้แต่รายการไฟล์ของ archive จริง |
+| รายการไฟล์ชั้นนอก | ได้รับรายงานจากผู้ใช้ | 13 entries มี APK ย่อย 11 ไฟล์; ดู docs/research/CHAOS_OUTER_REPORT.md |
+| Engine, assets, UI, กฎจาก APK ย่อย | ยังไม่ทราบ | รายงานอ่าน APK ย่อยล้มเหลวทั้ง 11 ไฟล์ด้วย FileNotFoundError |
 | กฎต้นแบบใน repository นี้ | งานออกแบบใหม่ | source และ tests ใน `src/`, `tests/` |
 | ภาพและข้อความต้นแบบ | งานออกแบบใหม่ | CSS/SVG ใน source ไม่ได้คัดลอก asset จากเกม |
 | lore ตัวอย่าง | งานออกแบบใหม่ | manifest ระบุ original design ไม่ใช่ verified canon |
@@ -31,3 +32,8 @@
 
 Tests ของเครื่องมือใช้ ZIP/APK ขนาดเล็กที่สร้างขึ้นเอง ไม่ใช่ Chaos Zero Nightmare
 และไม่พิสูจน์ว่าอ่าน archive ของเกมจริงได้ครบ
+
+ข้อผิดพลาด Windows ที่พบจากรายงาน: เครื่องมือใช้ `/tmp` แบบเจาะจง ทำให้สร้าง
+temporary file ไม่ได้ รุ่นแก้ไขให้ Python เลือก temp directory ของระบบ และบันทึก
+read failure ใน `errors` พร้อม `analysis_status: incomplete` และ exit code 1
+การแก้ไขผ่าน regression fixtures แล้ว แต่ยังต้องรัน XAPK จริงบน Windows อีกครั้ง

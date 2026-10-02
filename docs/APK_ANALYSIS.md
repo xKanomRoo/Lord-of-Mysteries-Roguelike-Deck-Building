@@ -2,7 +2,7 @@
 
 เครื่องมือใน repository นี้สร้างรายการไฟล์และอ่านโครงสร้างข้อความที่มีขนาดจำกัดจาก APK/XAPK โดยไม่รันโค้ดเกม ใช้ Python standard library เท่านั้น จึงใช้บนคลาวด์ได้โดยไม่ต้องมี Android emulator
 
-**สถานะไฟล์จริง:** ไฟล์ที่ผู้ใช้แนบมีชื่อ `Chaos+Zero+Nightmare_1.0.811_APKPure.xapk` แต่ระบบรับไฟล์สำหรับงานนี้จำกัดการดาวน์โหลดไว้ที่ 32 MiB และยังไม่ได้อ่าน archive นี้ จึงยังไม่มีข้อค้นพบเกี่ยวกับ Chaos Zero Nightmare จริง ชื่อไฟล์ไม่ยืนยันว่าเป็นเวอร์ชันล่าสุดหรือยืนยันแหล่งที่มา การทดสอบทั้งหมดใน `tests/test_apk_analysis.py` ใช้ archive ขนาดเล็กที่สร้างขึ้นเองและติดป้ายว่าเป็น synthetic fixture
+**สถานะไฟล์จริง:** ไฟล์ต้นฉบับ `Chaos+Zero+Nightmare_1.0.811_APKPure.xapk` ยังรับเข้าเครื่องคลาวด์ไม่ได้เพราะขีดจำกัด 32 MiB ได้รับรายงานชั้นนอกจากผู้ใช้แล้ว แต่การอ่าน APK ย่อยทั้ง 11 ไฟล์ล้มเหลวจากปัญหา `/tmp` บน Windows ซึ่งแก้ไขแล้วและรอรันใหม่ ยังไม่มีข้อสรุป engine, UI หรือกฎเกม ชื่อไฟล์ไม่ยืนยันว่าเป็นเวอร์ชันล่าสุดหรือยืนยันแหล่งที่มา การทดสอบทั้งหมดใน `tests/test_apk_analysis.py` ใช้ archive ขนาดเล็กที่สร้างขึ้นเองและติดป้ายว่าเป็น synthetic fixture
 
 ## ใช้งานเมื่อไฟล์อยู่ในคลาวด์แล้ว
 
@@ -12,10 +12,21 @@
 python3 tools/analyze_apk.py /workspace/game-research/chaos-1.0.811.xapk
 ```
 
-ค่าเริ่มต้นเก็บผลใน `/workspace/game-research/<ชื่อไฟล์>-<sha256-12-หลัก>/` ซึ่งอยู่นอก checkout:
+บนคลาวด์ค่าเริ่มต้นเก็บผลใน `/workspace/game-research/<ชื่อไฟล์>-<sha256-12-หลัก>/`
+ซึ่งอยู่นอก checkout ส่วน Windows หรือเครื่องที่ไม่มี `/workspace` เก็บใน
+`.local/game-research/<ชื่อไฟล์>-<sha256-12-หลัก>/` ใต้ working directory:
 
 - `report.json`: inventory ของ archive และ APK ย่อย, hash ของ input/ไฟล์ที่อ่าน, ขนาด, แหล่งอ้างอิง, ข้อจำกัด และเหตุผลที่ข้ามแต่ละรายการ
 - `summary.md`: สรุปเพื่ออ่านและส่งต่อให้ Codex พร้อม path อ้างอิง เช่น `game.xapk!base.apk!assets/config/cards.json`
+
+เครื่องมือใช้ temporary directory ที่ Python เลือกตามระบบ ไม่ต้องสร้าง `/tmp`
+บน Windows รายงานมี `analysis_status`: `completed`, `completed_with_skips`
+หรือ `incomplete` สถานะหมายถึงการอ่าน static ตามขอบเขตที่กำหนด ไม่ใช่ถอดกฎเกมครบ
+read failure หรือ archive error ให้ exit code 1 แต่ยังเก็บรายงานส่วนที่อ่านได้ไว้
+ส่วนการข้ามตาม size/compression/depth limits ก่อนอ่านจะรายงานแยกและไม่ใช่ I/O failure
+
+รายงานจากผู้ใช้รอบแรกพบปัญหา `/tmp` รุ่นแก้ไขให้รันใหม่ตาม
+[ขั้นตอน Windows](research/CHAOS_OUTER_REPORT.md)
 
 เลือกปลายทางใหม่หรือ directory ว่างได้ด้วย `--output` ผลเดิมจะไม่ถูกเขียนทับ:
 

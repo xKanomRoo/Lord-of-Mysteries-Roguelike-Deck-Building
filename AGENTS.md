@@ -27,8 +27,10 @@ not create a Git worktree unless the user explicitly requests one.
 
 ## Evidence and source handling
 
-- The attached reference XAPK has NOT been inspected: it exceeded the transfer
-  limit. Never describe prototype rules as recovered Chaos Zero Nightmare rules.
+- The raw reference XAPK is unavailable in this cloud task. The user supplied an
+  outer-inventory report with 13 entries, but all 11 nested APK reads failed on
+  Windows. Read docs/research/CHAOS_OUTER_REPORT.md; engine and gameplay remain
+  unknown. Never describe prototype rules as recovered Chaos Zero Nightmare rules.
 - Distinguish observed facts, hypotheses, unknowns, and original design choices.
   Give archive path, hash and source provenance for facts recovered later.
 - Filename or engine hints are not proof of visual layout or complete gameplay.

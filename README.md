@@ -8,6 +8,10 @@ Chaos Zero Nightmare เพราะไฟล์ XAPK ที่แนบเก�
 ชื่อไฟล์ `1.0.811` เป็นเพียงชื่อไฟล์ที่ผู้ใช้ส่งมา ไม่ได้ยืนยันว่าเป็นเวอร์ชันล่าสุด
 ดู [สถานะหลักฐาน](docs/EVIDENCE_STATUS.md)
 
+ได้รับรายงาน outer inventory จากผู้ใช้แล้ว พบ APK ย่อย 11 ไฟล์ แต่การอ่านย่อย
+ล้มเหลวจากข้อผิดพลาดโฟลเดอร์ temp บน Windows ซึ่งแก้แล้วในเครื่องมือรุ่นปัจจุบัน
+ยังต้องรันใหม่ก่อนสรุป engine หรือข้อมูล UI ดู [ผลตรวจรายงาน](docs/research/CHAOS_OUTER_REPORT.md)
+
 ![ภาพต้นแบบที่รันจริงใน Chromium](docs/images/prototype-desktop.png)
 
 [ภาพบนหน้าจอมือถือ](docs/images/prototype-mobile.png) · [ผลตรวจการทำงาน](docs/VALIDATION.md)
