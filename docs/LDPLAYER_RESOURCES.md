@@ -273,3 +273,51 @@ inventory หรือ export ล้มเหลว ตัว exporter ตรว
 ก่อน pull; ถ้า resources ไม่ตรงกับชุดที่เลือกไว้จะหยุดพร้อม error
 เมื่อสำเร็จ แนบ `chaos-runtime-core.zip` และ `chaos-runtime-lang-en.zip`
 จากโฟลเดอร์ที่เปิด ถ้ามี error ส่งข้อความนั้นเพื่อตรวจขั้นที่ล้มเหลว
+
+## ดึงค่าการ์ดและฉากต่อสู้เป็น byte ranges
+
+ได้รับ core/English ZIPs แล้ว อ่าน manifest และฐานข้อความอังกฤษได้จริง
+รวม card text 4,725 entries (ชื่อ/คำอธิบาย/variants ไม่ใช่จำนวน playable cards)
+ดู [ผลวิเคราะห์](research/CHAOS_RUNTIME_ANALYSIS.md)
+ค่าตัวเลขยังเป็น placeholders และ combat CSBs ยังไม่มี contents ในคลาวด์
+เลือกเพิ่ม 18 resources จาก manifest จริง: DB 13 และ CSB 5
+
+เครื่องมือใหม่อ่านเฉพาะช่วงที่ครอบคลุม stored payload 622,458 bytes
+aligned chunk readback รวม 1,703,936 bytes และอ่าน manifest 7,506,387 bytes
+เพื่อเทียบ source hash ก่อนดึงข้อมูล รวม transfer ที่คาดไว้ 9,210,323 bytes
+ไม่ต้องคัดลอก base chunks หลาย GB ตัว export ไม่เติมค่าการ์ดหรือ decode assets
+และยังไม่ได้ตรวจ Windows exec-out/dd จริงจนกว่าผู้ใช้รันขั้นนี้
+
+เปิด LDPlayer เดิมค้างไว้ คัดลอกบล็อกนี้ทั้งหมดลง PowerShell:
+
+```powershell
+& {
+  $ErrorActionPreference = "Stop"
+  $ldAdbPath = "D:\LDPlayer\LDPlayer14\adb.exe"
+  $chaosResearchDir = Join-Path $env:USERPROFILE "Downloads\chaos-research"
+  New-Item -ItemType Directory -Path "$chaosResearchDir\tools" -Force | Out-Null
+  Set-Location -LiteralPath $chaosResearchDir
+  $chaosRepoRaw = "https://raw.githubusercontent.com/xKanomRoo/Lord-of-Mysteries-Roguelike-Deck-Building/main"
+
+  foreach ($toolFile in @("inventory_android_resources.py", "export_android_research.py", "read_ssra_manifest.py", "export_ssra_ranges.py")) {
+    Invoke-WebRequest -UseBasicParsing -Uri "$chaosRepoRaw/tools/$toolFile" -OutFile ".\tools\$toolFile" -ErrorAction Stop
+  }
+  Invoke-WebRequest -UseBasicParsing -Uri "$chaosRepoRaw/docs/research/profiles/chaos-card-battle-ranges-45a009358972.json" -OutFile ".\tools\chaos-card-battle-ranges.json" -ErrorAction Stop
+
+  $chaosRangeOutput = ".local/chaos-card-battle-$(Get-Date -Format 'yyyyMMdd-HHmmss-fff')"
+  py .\tools\export_ssra_ranges.py --adb "$ldAdbPath" --serial "emulator-5554" --plan ".\tools\chaos-card-battle-ranges.json" --output "$chaosRangeOutput"
+  if ($LASTEXITCODE -ne 0) { throw "Range export failed." }
+  Invoke-Item -LiteralPath $chaosRangeOutput
+}
+```
+
+เมื่อสำเร็จแนบ **chaos-card-battle-ranges.zip** ไฟล์เดียวจากโฟลเดอร์ที่เปิด
+ZIP มี manifest และ 18 stored resource blobs พร้อม index/hash; คาดขนาดประมาณ
+8 MB ถ้ามี error ส่งข้อความนั้น หาก manifest เปลี่ยน patch เครื่องมือจะหยุด
+แทนการใช้ offsets เก่า และต้องวิเคราะห์ manifest ใหม่เพื่อปรับ selection
+
+ADB ใช้ `exec-out` กับ Android `dd` เพื่ออ่าน binary spans และตัด surrounding
+aligned bytes ออกก่อนบรรจุ ZIP ตรวจ byte count และขนาด chunk ก่อน/หลัง
+การคัดลอก แต่ยังไม่ตรวจ whole-chunk hash เพราะไม่ได้อ่านทั้ง chunk
+decoded FHSH ตรวจภายหลังบนคลาวด์เมื่อคลาย stored blobs และไม่ execute resources
+ตัว manifest pin/hash ใช้ยืนยันชุดข้อมูล ไม่ใช่ CDN signature

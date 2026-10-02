@@ -10,6 +10,8 @@ not create a Git worktree unless the user explicitly requests one.
 - Node 24.19.0 is the tested runtime; Node >=22.12 and <25 is supported.
 - Install with `npm ci`, build with `npm run build`, run with `npm run dev`.
 - Python 3.12 is tested; research tools use the standard library by default.
+  SSRA Zstd extraction needs `zstandard==0.25.0` in `.local/runtime-venv`;
+  use that interpreter for the full research suite if system Python lacks it.
   SCT2 PNG decoding is optional: `texture2ddecoder==1.0.6` in `.local/texture-venv`
   with `tools/decode_texture.py --decode-astc`; do not add it to game dependencies.
 - `npm test` checks the game engine. `npm run test:python` checks research tools.
@@ -38,6 +40,17 @@ not create a Git worktree unless the user explicitly requests one.
   game package, without pulling contents or changing emulator settings.
 - `tools/export_android_research.py`: copy only the six selected resource files
   from the same local emulator into two bounded, hash-indexed research ZIPs.
+- `tools/read_android_research.py`: verify both fixed ZIPs and publish only
+  ordinal inert payloads plus a sanitized receipt.
+- `tools/read_ssra_manifest.py`: bounded SSRA v4 metadata, native/sample-checked
+  GRPS/CNAM/META/FHSH sections and portable XXH64; resource paths are labels.
+- `tools/extract_ssra_resources.py`: verify receipt/chunk/footer/FHSH and decode
+  selected inert resources using isolated trusted zstandard 0.25.0.
+- `tools/read_game_text.py`: source-pinned native file-wrapper inspection and
+  complete text PLPcK indexing/query; never executes native code or publishes
+  its transform table. Full reference text stays ignored.
+- `tools/export_ssra_ranges.py`: source-pinned selection of small card/battle
+  resource byte ranges from the user's local emulator, not whole base chunks.
 - `tools/decode_csb.py`: bounded documented Cocos Studio scene subset with offsets.
 - `tools/render_csb_wireframe.py`: approximate serialized layout diagrams, not runtime screenshots.
 - `tools/decode_texture.py`: bounded SCT/SCSP inspection and SCT1 PNG decoding.
@@ -55,7 +68,8 @@ not create a Git worktree unless the user explicitly requests one.
   The supplied native APK has ten hash-verified ARM64 libraries. Returned engine
   labels are cocos2d-x-4.0 and V8 12.4.254.21; read
   docs/research/CHAOS_NATIVE_ANALYSIS.md. The exact complete
-  engine version, combat UI and game rules remain unknown. Never describe
+  engine version and combat layouts remain unknown. Runtime English text now
+  supplies card descriptions, but numeric rules remain unresolved. Never describe
   prototype rules as recovered Chaos Zero Nightmare rules.
 - Layout coordinates are serialized local values. Runtime constraints, clipping,
   custom widgets, animation and regional variants may change the final screen.
@@ -81,8 +95,13 @@ not create a Git worktree unless the user explicitly requests one.
   include account databases, preferences or tokens in a resource export.
   The received inventory reports 47 accessible external files / 7.56 GiB and
   private-root permission failures. Read docs/research/CHAOS_LDPLAYER_INVENTORY.md;
-  raw manifest/chunk bytes have not arrived yet. Do not ask for the complete
-  external resource directory when selected packs suffice.
+  both selected runtime ZIPs have now arrived and passed CRC/SHA checks. Read
+  docs/research/CHAOS_RUNTIME_ANALYSIS.md: manifest has 87,529 unique paths;
+  text DB yielded 108,306 English entries including 4,725 card text entries.
+  Counts include fields/variants, not playable card counts. Placeholder amounts
+  remain unresolved. Source inventory hash declared by these ZIPs differs from
+  the earlier uploaded inventory; do not conflate them. Select only the 18
+  source-pinned next DB/CSB ranges; do not request all base chunks or app data.
 - Use original placeholder art and text for the playable demo. Import reference
   assets into the product only when the user has supplied appropriate permission.
 - Retrieve bounded source passages rather than putting entire novels into prompts.
