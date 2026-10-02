@@ -22,7 +22,10 @@
 | Selected DB shards | อ่านแปด shards ครบ | 2,691rows/5,780records; source-pinned wrapper/schema/index/bucket/fullcoverageผ่าน; trailer38bytesตรวจตรงแต่purposeunknown; fulltablesไม่commit |
 | Card/hand UI | อ่านห้าฉากครบ documented subset | 683nodes/682WidgetOptions/unsupportedTileSprite1; cardroot0x0จริงและdiagramviewportinferred; handbranches1–13เป็นsavedalternatives; fullHUD/animation/assetsยังไม่ยืนยัน |
 | Texture images | ถอด PNG ได้ 108 ไฟล์ | SCT1 RGB565+A8 2; SCT2 ASTC 106; ไม่ใช่ screenshot เกมที่ประกอบแล้ว |
-| กฎต้นแบบใน repository นี้ | งานออกแบบใหม่ | source และ tests ใน `src/`, `tests/` |
+| กฎต้นแบบใน repository นี้ | งานออกแบบใหม่ | browser demo ใน `src/`; Godot native Android ใน `mobile/`; ไม่ใช่ recovered CZN runtime |
+| Native mobile content | original adaptation แยกจาก research | 3pathways/54cards/21enemies/12events36choices/12relics, 3acts12combats; source และ save schemas มี tests; ดู CONTENT_DESIGN |
+| นิยายจีนผู้ใช้ | อ่านและนำเข้า private corpus แล้ว | 2files17,812,214bytes strict/roundtripGB18030,13,904chunks; hashes/chapters/line offsets ตรวจจริง; edition/completenessไม่ยืนยัน; fulltext/indexไม่เข้าGit/APK |
+| Online player saves | source/schema พร้อม; ยังไม่มี live project | Supabase owner RLS + revision guards; localPG17.11ผ่าน18checks/Godotprotocol41; ผู้ใช้ต้องสร้างprojectและใส่publicconfigเอง |
 | ภาพและข้อความต้นแบบ | งานออกแบบใหม่ | CSS/SVG ใน source ไม่ได้คัดลอก asset จากเกม |
 | lore ตัวอย่าง | งานออกแบบใหม่ | manifest ระบุ original design ไม่ใช่ verified canon |
 | เว็บไซต์ lore | การเข้าถึงถูกบล็อก | HEAD ผ่าน proxy ไป Wikipedia และ Webnovel ได้ `403 Forbidden` |

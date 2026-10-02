@@ -19,9 +19,34 @@ not create a Git worktree unless the user explicitly requests one.
 - Run relevant existing tests when editing behavior, then build. A server PID or
   a zero-test run does not prove functionality.
 - No API keys, database, game backend, or cloud account is required for this demo.
+- The main Android project is `mobile/`, a native Godot 4.6.3 game. Read
+  docs/START_NEXT_ANDROID.md, docs/ANDROID_BUILD.md and docs/CONTENT_DESIGN.md
+  before mobile changes; the original browser demo remains in `src/`.
+- Run `bash tools/setup_android.sh`, then `bash tools/build_android.sh` for the
+  signed debug APK. Android SDK/JDK/templates/editor are isolated in `.local/`,
+  downloaded from official sources and pinned by vendor/content hashes.
+- Godot test scripts under `mobile/tests/` validate native engine, Control UI and
+  optional cloud protocol. Use task-specific XDG directories under `.local/`:
+  restricted HOME is not writable. Native viewport screenshots are not Android
+  hardware screenshots; APK signature/manifest checks are not device launch tests.
+- Cloud saves require the user's own Supabase project. Read docs/ONLINE_BACKEND.md;
+  never include service_role/sb_secret keys in an APK or log account/session values.
+  Public cloud config, keystores and sessions stay outside Git. Online backup is
+  not a server-authoritative economy or realtime multiplayer.
 
 ## Architecture
 
+- `mobile/project.godot`, `main.tscn`, `scripts/main.gd`: native responsive touch UI.
+- `mobile/scripts/game_engine.gd`, `mobile/data/content.json`: deterministic game
+  rules and original curated content; keep schema IDs and save validation stable.
+- `mobile/scripts/cloud_save.gd`: optional bounded HTTPS Auth/REST backup with
+  owner-private saves, explicit restore and optimistic revision checks.
+- `backend/supabase/schema.sql`: owner RLS, restricted client grants and revision
+  guard; local PostgreSQL fixtures do not establish live Supabase deployment.
+- `tools/setup_android.py`, `android-toolchain.json`, `build_android.sh`,
+  `verify_android_apk.py`: reproducible verified native APK toolchain/export.
+- `tools/import_novel_lore.py`: private SQLite Chinese substring retrieval with
+  chapters/lines/offsets/hashes; never execute or publish novel passages.
 - `src/game.js`: pure seeded game state and transitions. Keep DOM code out.
 - `src/main.js`, `src/style.css`: browser presentation and interaction.
 - `tools/analyze_apk.py`: bounded static archive research, never runs game code.
@@ -126,6 +151,13 @@ not create a Git worktree unless the user explicitly requests one.
   assets into the product only when the user has supplied appropriate permission.
 - Retrieve bounded source passages rather than putting entire novels into prompts.
   If no canon source verifies a claim, label it unverified or original design.
+- Two user-supplied Chinese novel files were imported privately as GB18030 with
+  exact roundtrip hashes: 17,812,214 bytes, 13,904 overlapping chunks. Read
+  docs/research/LOTM_COI_SOURCE_RECEIPT.md and docs/LORE_SOURCES.md. Search the
+  preserved `.local/lore/novels-zh/index.sqlite3`; only a fresh clone without
+  private corpus needs import again. Observed headings are not canon chapter
+  counts or edition/completeness verification. New content cites local source
+  references for themes while mechanical stats/rules remain original adaptations.
 
 ## Delivery
 

@@ -1,0 +1,4 @@
+{
+  "base_url": "https://YOUR-PROJECT.supabase.co",
+  "public_key": "YOUR-PUBLISHABLE-OR-LEGACY-ANON-PUBLIC-KEY"
+}

@@ -1,0 +1,71 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  debug-apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install verified Android tools
+        env:
+          GRAY_FOG_DEBUG_KEYSTORE_B64: ${{ secrets.ANDROID_DEBUG_KEYSTORE_B64 }}
+        run: bash tools/setup_android.sh --force-local-godot
+      - name: Configure optional cloud saves
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          python3 - <<'PY'
+          import base64, json, os, re
+          from pathlib import Path
+          url = os.environ.get('SUPABASE_URL', '').strip()
+          key = os.environ.get('SUPABASE_PUBLISHABLE_KEY', '').strip()
+          if bool(url) != bool(key):
+              raise SystemExit('Set both public cloud variables, or leave both empty for offline play.')
+          if url:
+              if not re.fullmatch(r'https://[A-Za-z0-9][A-Za-z0-9.-]*(?::443)?/?', url):
+                  raise SystemExit('SUPABASE_URL must be a bare HTTPS project URL.')
+              if len(key) > 4096 or '\n' in key or '\r' in key:
+                  raise SystemExit('Invalid public key format.')
+              public = bool(re.fullmatch(r'sb_publishable_[A-Za-z0-9_-]+', key))
+              if not public and key.count('.') == 2:
+                  try:
+                      segment = key.split('.')[1]
+                      claims = json.loads(base64.urlsafe_b64decode(segment + '=' * (-len(segment) % 4)))
+                      public = isinstance(claims, dict) and claims.get('role') == 'anon'
+                  except (ValueError, UnicodeError):
+                      pass
+              if not public:
+                  raise SystemExit('Use a publishable key or legacy anon key; backend secrets must never be included in an APK.')
+              Path('mobile/cloud-config.json').write_text(json.dumps({'base_url': url, 'public_key': key}) + '\n')
+          PY
+      - name: Check native engine and cloud protocol
+        run: |
+          export XDG_DATA_HOME="$GITHUB_WORKSPACE/.local/android-tools/xdg-data"
+          export XDG_CONFIG_HOME="$GITHUB_WORKSPACE/.local/android-tools/xdg-config"
+          export XDG_CACHE_HOME="$GITHUB_WORKSPACE/.local/android-tools/xdg-cache"
+          .local/android-tools/godot/Godot_v4.6.3-stable_linux.x86_64 --headless --path mobile --editor --import --quit
+          .local/android-tools/godot/Godot_v4.6.3-stable_linux.x86_64 --headless --path mobile --script res://tests/test_engine.gd
+          .local/android-tools/godot/Godot_v4.6.3-stable_linux.x86_64 --headless --path mobile --script res://tests/test_cloud_save.gd
+      - name: Build and verify APK
+        run: bash tools/build_android.sh
+      - name: Download APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: gray-fog-debug-apk
+          path: |
+            .local/android-artifacts/gray-fog-debug.apk
+            .local/android-artifacts/gray-fog-debug.apk.sha256
+            .local/android-artifacts/gray-fog-debug.verification.json
+          if-no-files-found: error
+          retention-days: 3

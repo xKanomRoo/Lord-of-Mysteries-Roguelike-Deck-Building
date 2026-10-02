@@ -1,0 +1,1750 @@
+{
+  "version": 1,
+  "metadata": {
+    "classification": "original-adaptation",
+    "rules_version": 1,
+    "reference_game": "Selected Chaos Zero Nightmare data informed separation of card/effect/condition fields and retain/exhaust-style decisions; no copied balance tables, formulas, text, or art.",
+    "lore_use": "Names and broad themes inspired by bounded searches in user-supplied Chinese novels. All card numbers, enemies, events, relics, storyline and combat effects are original design. Source editions, completeness and rights are not independently verified.",
+    "spoiler_level": "early terminology; original encounter story",
+    "lore_sources": [
+      {
+        "id": "lotm-zh",
+        "original_sha256": "fce8d9d02a540161357561e9825b98980050efec0c87feb60561c3ec9560cef7",
+        "normalized_sha256": "ce2e0916d53516ffeaf0aae5a1cd9b6bfc9dccf207a0fa5ea50f249b4a415012",
+        "references": [
+          {
+            "theme": "divination / seer terminology",
+            "query": "占卜家 序列9",
+            "chapter_index": 28,
+            "chapter_label": "第28章密修会",
+            "chunk_id": 6465,
+            "chunk_sha256": "7e07f8a3b0ee4c5f512aecba1161eb9bed9fb022a32265d1a9d834dde85b68ba",
+            "lines": [
+              2623,
+              2629
+            ]
+          },
+          {
+            "theme": "stagecraft / clown terminology",
+            "query": "占卜家 魔术师",
+            "chapter_index": 78,
+            "chapter_label": "第78章心理阴影（第一更求推荐票）",
+            "chunk_id": 6734,
+            "chunk_sha256": "8893f9204714dc06ba08850ab13dc66fcd8e34e9dfb161074a60419f24857f32",
+            "lines": [
+              6945,
+              6959
+            ]
+          },
+          {
+            "theme": "apprentice terminology only; control/ritual abilities are original",
+            "query": "学徒 序列9",
+            "chapter_index": 28,
+            "chapter_label": "第28章密修会",
+            "chunk_id": 6465,
+            "chunk_sha256": "7e07f8a3b0ee4c5f512aecba1161eb9bed9fb022a32265d1a9d834dde85b68ba",
+            "lines": [
+              2623,
+              2629
+            ]
+          }
+        ]
+      },
+      {
+        "id": "coi-zh",
+        "original_sha256": "99a1c4aa525083e5474eb01bf131a6c1eeee1467b0eae41cd8dc9da12a10a9a7",
+        "normalized_sha256": "b3e4872a32a6df0dab3028cef485a28695fbdbec92360a30fb253f68a7bf2905",
+        "references": [
+          {
+            "theme": "hunter / sequence terminology; Poison is an original combat rule",
+            "query": "猎人 序列9",
+            "chapter_index": 26,
+            "chapter_label": "第二十五章 序列与魔药",
+            "chunk_id": 138,
+            "chunk_sha256": "e7dfe1a98d2c351cd218a03ad5bace4a10f0e659f541abbbbc394268230e1233",
+            "lines": [
+              2748,
+              2761
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "pathways": [
+    {
+      "id": "seer",
+      "name": "Seer",
+      "subtitle": "Misdirection · prepared turns",
+      "description": "Read the enemy's intent, make it Weak, and keep a defense for the turn that matters. Original adaptation inspired by divination and stagecraft themes.",
+      "deck": [
+        "etched_strike",
+        "etched_strike",
+        "etched_strike",
+        "etched_strike",
+        "etched_strike",
+        "paper_ward",
+        "paper_ward",
+        "paper_ward",
+        "paper_ward",
+        "cold_reading",
+        "spirit_lance",
+        "steady_breath"
+      ],
+      "starting_relic": "folded_map"
+    },
+    {
+      "id": "hunter",
+      "name": "Hunter",
+      "subtitle": "Poison · patient pressure",
+      "description": "Mark a target, stack Poison, and turn a patient setup into a decisive ambush. These combat effects are original rules, not novel abilities.",
+      "deck": [
+        "hunter_cut",
+        "hunter_cut",
+        "hunter_cut",
+        "hunter_cut",
+        "trail_guard",
+        "trail_guard",
+        "trail_guard",
+        "trail_guard",
+        "tracker_eye",
+        "tracker_eye",
+        "thorn_net",
+        "hunt_lance"
+      ],
+      "starting_relic": "tarnished_fang"
+    },
+    {
+      "id": "apprentice",
+      "name": "Apprentice",
+      "subtitle": "Control · energy and recovery",
+      "description": "Build protection with rituals, weaken dangerous turns, and turn limited resources into longer combinations. Original support/control adaptation.",
+      "deck": [
+        "apprentice_bolt",
+        "apprentice_bolt",
+        "apprentice_bolt",
+        "apprentice_bolt",
+        "threshold_ward",
+        "threshold_ward",
+        "threshold_ward",
+        "threshold_ward",
+        "phase_step",
+        "silver_coil",
+        "quiet_formula",
+        "steady_breath"
+      ],
+      "starting_relic": "brass_key"
+    }
+  ],
+  "cards": [
+    {
+      "id": "etched_strike",
+      "name": "Etched Strike",
+      "cost": 1,
+      "type": "attack",
+      "rarity": "basic",
+      "pathway": "neutral",
+      "description": "Deal 6 damage.",
+      "damage": 6
+    },
+    {
+      "id": "paper_ward",
+      "name": "Paper Ward",
+      "cost": 1,
+      "type": "skill",
+      "rarity": "basic",
+      "pathway": "neutral",
+      "description": "Gain 7 block.\nExpires next turn.",
+      "block": 7
+    },
+    {
+      "id": "cold_reading",
+      "name": "Cold Reading",
+      "cost": 0,
+      "type": "skill",
+      "rarity": "basic",
+      "pathway": "neutral",
+      "description": "Draw 2 cards.\nLose 1 sanity. Exhaust.",
+      "draw": 2,
+      "sanity_cost": 1,
+      "exhaust": true
+    },
+    {
+      "id": "spirit_lance",
+      "name": "Spirit Lance",
+      "cost": 2,
+      "type": "attack",
+      "rarity": "basic",
+      "pathway": "neutral",
+      "description": "Deal 15 damage.\nLose 2 sanity.",
+      "damage": 15,
+      "sanity_cost": 2
+    },
+    {
+      "id": "steady_breath",
+      "name": "Steady Breath",
+      "cost": 1,
+      "type": "skill",
+      "rarity": "basic",
+      "pathway": "neutral",
+      "description": "Gain 5 block.\nRecover 3 sanity.",
+      "block": 5,
+      "sanity": 3
+    },
+    {
+      "id": "moon_cut",
+      "name": "Moon Cut",
+      "cost": 1,
+      "type": "attack",
+      "rarity": "uncommon",
+      "pathway": "neutral",
+      "description": "Deal 10 damage.",
+      "damage": 10
+    },
+    {
+      "id": "mirror_shield",
+      "name": "Mirror Shield",
+      "cost": 1,
+      "type": "skill",
+      "rarity": "uncommon",
+      "pathway": "neutral",
+      "description": "Gain 11 block.",
+      "block": 11
+    },
+    {
+      "id": "lantern_flare",
+      "name": "Lantern Flare",
+      "cost": 2,
+      "type": "attack",
+      "rarity": "uncommon",
+      "pathway": "neutral",
+      "description": "Deal 16 damage.\nDraw 1. Lose 1 sanity.",
+      "damage": 16,
+      "draw": 1,
+      "sanity_cost": 1
+    },
+    {
+      "id": "quiet_formula",
+      "name": "Quiet Formula",
+      "cost": 0,
+      "type": "skill",
+      "rarity": "uncommon",
+      "pathway": "neutral",
+      "description": "Recover 3 sanity.\nDraw 1. Exhaust.",
+      "sanity": 3,
+      "draw": 1,
+      "exhaust": true
+    },
+    {
+      "id": "red_thread",
+      "name": "Red Thread",
+      "cost": 1,
+      "type": "attack",
+      "rarity": "uncommon",
+      "pathway": "neutral",
+      "description": "Deal 7 damage.\nGain 4 block.",
+      "damage": 7,
+      "block": 4
+    },
+    {
+      "id": "sealed_oath",
+      "name": "Sealed Oath",
+      "cost": 1,
+      "type": "power",
+      "rarity": "rare",
+      "pathway": "neutral",
+      "description": "Attacks gain +2 damage\nthis encounter. Exhaust.",
+      "attack_bonus": 2,
+      "exhaust": true
+    },
+    {
+      "id": "field_notes",
+      "name": "Field Notes",
+      "cost": 1,
+      "type": "skill",
+      "rarity": "uncommon",
+      "pathway": "neutral",
+      "description": "Gain 3 block. Draw 1.\nIf you began with block, draw +1.",
+      "block": 3,
+      "draw": 1,
+      "draw_if_block": 1
+    },
+    {
+      "id": "mercy_stitch",
+      "name": "Mercy Stitch",
+      "cost": 1,
+      "type": "skill",
+      "rarity": "uncommon",
+      "pathway": "neutral",
+      "description": "Heal 5 HP. Gain 3 block.\nExhaust.",
+      "heal": 5,
+      "block": 3,
+      "exhaust": true
+    },
+    {
+      "id": "last_match",
+      "name": "Last Match",
+      "cost": 0,
+      "type": "skill",
+      "rarity": "uncommon",
+      "pathway": "neutral",
+      "description": "Gain 1 energy.\nLose 2 sanity. Exhaust.",
+      "energy": 1,
+      "sanity_cost": 2,
+      "exhaust": true
+    },
+    {
+      "id": "iron_clause",
+      "name": "Iron Clause",
+      "cost": 2,
+      "type": "attack",
+      "rarity": "uncommon",
+      "pathway": "neutral",
+      "description": "Deal 12 damage.\nApply 1 Weak.",
+      "damage": 12,
+      "weak": 1
+    },
+    {
+      "id": "resonant_guard",
+      "name": "Resonant Guard",
+      "cost": 2,
+      "type": "skill",
+      "rarity": "rare",
+      "pathway": "neutral",
+      "description": "Gain 15 block. Recover 2 sanity.\nRetain until played.",
+      "block": 15,
+      "sanity": 2,
+      "retain": true
+    },
+    {
+      "id": "borrowed_horizon",
+      "name": "Borrowed Horizon",
+      "cost": 2,
+      "type": "skill",
+      "rarity": "rare",
+      "pathway": "neutral",
+      "description": "Draw 3 cards. Gain 1 energy.\nLose 3 sanity. Exhaust.",
+      "draw": 3,
+      "energy": 1,
+      "sanity_cost": 3,
+      "exhaust": true
+    },
+    {
+      "id": "unbroken_lantern",
+      "name": "Unbroken Lantern",
+      "cost": 1,
+      "type": "power",
+      "rarity": "rare",
+      "pathway": "neutral",
+      "description": "Attacks gain +1 damage this encounter.\nHeal 4 HP. Exhaust.",
+      "attack_bonus": 1,
+      "heal": 4,
+      "exhaust": true
+    },
+    {
+      "id": "omen_cut",
+      "name": "Omen Cut",
+      "cost": 1,
+      "type": "attack",
+      "rarity": "uncommon",
+      "pathway": "seer",
+      "description": "Deal 6 damage.\nIf the enemy is Weak, deal +6.",
+      "damage": 6,
+      "damage_if_weak": 6
+    },
+    {
+      "id": "misdirection",
+      "name": "Misdirection",
+      "cost": 1,
+      "type": "skill",
+      "rarity": "uncommon",
+      "pathway": "seer",
+      "description": "Gain 6 block.\nApply 2 Weak.",
+      "block": 6,
+      "weak": 2
+    },
+    {
+      "id": "marked_future",
+      "name": "Marked Future",
+      "cost": 0,
+      "type": "skill",
+      "rarity": "uncommon",
+      "pathway": "seer",
+      "description": "Apply 2 Vulnerable.\nLose 2 sanity. Exhaust.",
+      "vulnerable": 2,
+      "sanity_cost": 2,
+      "exhaust": true
+    },
+    {
+      "id": "paper_double",
+      "name": "Paper Double",
+      "cost": 1,
+      "type": "skill",
+      "rarity": "uncommon",
+      "pathway": "seer",
+      "description": "Gain 9 block.\nRetain until played.",
+      "block": 9,
+      "retain": true
+    },
+    {
+      "id": "sleight_of_hand",
+      "name": "Sleight of Hand",
+      "cost": 0,
+      "type": "skill",
+      "rarity": "uncommon",
+      "pathway": "seer",
+      "description": "Draw 2. If you began with block,\ndraw 1 more. Exhaust.",
+      "draw": 2,
+      "draw_if_block": 1,
+      "exhaust": true
+    },
+    {
+      "id": "trapdoor_step",
+      "name": "Trapdoor Step",
+      "cost": 1,
+      "type": "skill",
+      "rarity": "uncommon",
+      "pathway": "seer",
+      "description": "Gain 5 block. Gain 1 energy.\nExhaust.",
+      "block": 5,
+      "energy": 1,
+      "exhaust": true
+    },
+    {
+      "id": "quiet_verdict",
+      "name": "Quiet Verdict",
+      "cost": 2,
+      "type": "attack",
+      "rarity": "uncommon",
+      "pathway": "seer",
+      "description": "Deal 12 damage.\nIf the enemy is Weak, deal +10.",
+      "damage": 12,
+      "damage_if_weak": 10
+    },
+    {
+      "id": "mirror_rehearsal",
+      "name": "Mirror Rehearsal",
+      "cost": 1,
+      "type": "skill",
+      "rarity": "uncommon",
+      "pathway": "seer",
+      "description": "Gain 4 block. If the enemy\nis Vulnerable, gain +7 block.",
+      "block": 4,
+      "block_if_vulnerable": 7
+    },
+    {
+      "id": "false_ending",
+      "name": "False Ending",
+      "cost": 2,
+      "type": "attack",
+      "rarity": "rare",
+      "pathway": "seer",
+      "description": "Deal 17 damage. Apply 1 Weak.\nRetain until played.",
+      "damage": 17,
+      "weak": 1,
+      "retain": true
+    },
+    {
+      "id": "threaded_fate",
+      "name": "Threaded Fate",
+      "cost": 1,
+      "type": "power",
+      "rarity": "rare",
+      "pathway": "seer",
+      "description": "Attacks gain +2 damage this encounter.\nApply 1 Vulnerable. Exhaust.",
+      "attack_bonus": 2,
+      "vulnerable": 1,
+      "exhaust": true
+    },
+    {
+      "id": "unseen_audience",
+      "name": "Unseen Audience",
+      "cost": 1,
+      "type": "skill",
+      "rarity": "rare",
+      "pathway": "seer",
+      "description": "Gain 8 block. Draw 2.\nLose 2 sanity.",
+      "block": 8,
+      "draw": 2,
+      "sanity_cost": 2
+    },
+    {
+      "id": "pocket_miracle",
+      "name": "Pocket Miracle",
+      "cost": 0,
+      "type": "skill",
+      "rarity": "rare",
+      "pathway": "seer",
+      "description": "Gain 2 energy. Recover 2 sanity.\nExhaust.",
+      "energy": 2,
+      "sanity": 2,
+      "exhaust": true
+    },
+    {
+      "id": "hunter_cut",
+      "name": "Hunter Cut",
+      "cost": 1,
+      "type": "attack",
+      "rarity": "basic",
+      "pathway": "hunter",
+      "description": "Deal 7 damage.",
+      "damage": 7
+    },
+    {
+      "id": "trail_guard",
+      "name": "Trail Guard",
+      "cost": 1,
+      "type": "skill",
+      "rarity": "basic",
+      "pathway": "hunter",
+      "description": "Gain 5 block.\nApply 1 Poison.",
+      "block": 5,
+      "poison": 1
+    },
+    {
+      "id": "tracker_eye",
+      "name": "Tracker Eye",
+      "cost": 0,
+      "type": "skill",
+      "rarity": "uncommon",
+      "pathway": "hunter",
+      "description": "Apply 1 Vulnerable. Draw 1.\nLose 1 sanity. Exhaust.",
+      "vulnerable": 1,
+      "draw": 1,
+      "sanity_cost": 1,
+      "exhaust": true
+    },
+    {
+      "id": "thorn_net",
+      "name": "Thorn Net",
+      "cost": 1,
+      "type": "skill",
+      "rarity": "uncommon",
+      "pathway": "hunter",
+      "description": "Apply 3 Poison.\nApply 1 Weak.",
+      "poison": 3,
+      "weak": 1
+    },
+    {
+      "id": "hunt_lance",
+      "name": "Hunt Lance",
+      "cost": 2,
+      "type": "attack",
+      "rarity": "uncommon",
+      "pathway": "hunter",
+      "description": "Deal 13 damage.\nApply 2 Poison.",
+      "damage": 13,
+      "poison": 2
+    },
+    {
+      "id": "venom_blade",
+      "name": "Venom Blade",
+      "cost": 1,
+      "type": "attack",
+      "rarity": "uncommon",
+      "pathway": "hunter",
+      "description": "Deal 5 damage.\nApply 3 Poison.",
+      "damage": 5,
+      "poison": 3
+    },
+    {
+      "id": "patient_ambush",
+      "name": "Patient Ambush",
+      "cost": 1,
+      "type": "attack",
+      "rarity": "uncommon",
+      "pathway": "hunter",
+      "description": "Deal 7 damage. If the enemy\nis Poisoned, deal +8.",
+      "damage": 7,
+      "damage_if_poison": 8
+    },
+    {
+      "id": "smoke_cover",
+      "name": "Smoke Cover",
+      "cost": 1,
+      "type": "skill",
+      "rarity": "uncommon",
+      "pathway": "hunter",
+      "description": "Gain 8 block.\nApply 2 Poison.",
+      "block": 8,
+      "poison": 2
+    },
+    {
+      "id": "trophy_breath",
+      "name": "Trophy Breath",
+      "cost": 0,
+      "type": "skill",
+      "rarity": "uncommon",
+      "pathway": "hunter",
+      "description": "Recover 1 sanity. If the enemy\nis Poisoned, recover +3. Exhaust.",
+      "sanity": 1,
+      "sanity_if_poison": 3,
+      "exhaust": true
+    },
+    {
+      "id": "red_weather",
+      "name": "Red Weather",
+      "cost": 2,
+      "type": "skill",
+      "rarity": "rare",
+      "pathway": "hunter",
+      "description": "Apply 7 Poison. Gain 5 block.\nLose 2 sanity. Exhaust.",
+      "poison": 7,
+      "block": 5,
+      "sanity_cost": 2,
+      "exhaust": true
+    },
+    {
+      "id": "predator_oath",
+      "name": "Predator Oath",
+      "cost": 1,
+      "type": "power",
+      "rarity": "rare",
+      "pathway": "hunter",
+      "description": "Attacks gain +2 damage this encounter.\nApply 2 Poison. Exhaust.",
+      "attack_bonus": 2,
+      "poison": 2,
+      "exhaust": true
+    },
+    {
+      "id": "closing_jaws",
+      "name": "Closing Jaws",
+      "cost": 2,
+      "type": "attack",
+      "rarity": "rare",
+      "pathway": "hunter",
+      "description": "Deal 15 damage. If the enemy\nis Poisoned, deal +12. Exhaust.",
+      "damage": 15,
+      "damage_if_poison": 12,
+      "exhaust": true
+    },
+    {
+      "id": "apprentice_bolt",
+      "name": "Apprentice Bolt",
+      "cost": 1,
+      "type": "attack",
+      "rarity": "basic",
+      "pathway": "apprentice",
+      "description": "Deal 5 damage.\nDraw 1 card.",
+      "damage": 5,
+      "draw": 1
+    },
+    {
+      "id": "threshold_ward",
+      "name": "Threshold Ward",
+      "cost": 1,
+      "type": "skill",
+      "rarity": "basic",
+      "pathway": "apprentice",
+      "description": "Gain 6 block.\nRecover 1 sanity.",
+      "block": 6,
+      "sanity": 1
+    },
+    {
+      "id": "phase_step",
+      "name": "Phase Step",
+      "cost": 0,
+      "type": "skill",
+      "rarity": "uncommon",
+      "pathway": "apprentice",
+      "description": "Gain 4 block. Apply 1 Weak.\nExhaust.",
+      "block": 4,
+      "weak": 1,
+      "exhaust": true
+    },
+    {
+      "id": "silver_coil",
+      "name": "Silver Coil",
+      "cost": 1,
+      "type": "skill",
+      "rarity": "uncommon",
+      "pathway": "apprentice",
+      "description": "Apply 2 Vulnerable.\nDraw 1 card.",
+      "vulnerable": 2,
+      "draw": 1
+    },
+    {
+      "id": "safe_passage",
+      "name": "Safe Passage",
+      "cost": 1,
+      "type": "skill",
+      "rarity": "uncommon",
+      "pathway": "apprentice",
+      "description": "Gain 6 block. Heal 4 HP.\nExhaust.",
+      "block": 6,
+      "heal": 4,
+      "exhaust": true
+    },
+    {
+      "id": "sealed_door",
+      "name": "Sealed Door",
+      "cost": 2,
+      "type": "skill",
+      "rarity": "uncommon",
+      "pathway": "apprentice",
+      "description": "Gain 16 block.\nApply 1 Weak.",
+      "block": 16,
+      "weak": 1
+    },
+    {
+      "id": "return_address",
+      "name": "Return Address",
+      "cost": 1,
+      "type": "attack",
+      "rarity": "uncommon",
+      "pathway": "apprentice",
+      "description": "Deal 8 damage. If the enemy\nis Weak, deal +4.",
+      "damage": 8,
+      "damage_if_weak": 4
+    },
+    {
+      "id": "chalk_circuit",
+      "name": "Chalk Circuit",
+      "cost": 1,
+      "type": "skill",
+      "rarity": "uncommon",
+      "pathway": "apprentice",
+      "description": "Gain 2 energy.\nLose 2 sanity. Exhaust.",
+      "energy": 2,
+      "sanity_cost": 2,
+      "exhaust": true
+    },
+    {
+      "id": "echo_chamber",
+      "name": "Echo Chamber",
+      "cost": 1,
+      "type": "skill",
+      "rarity": "uncommon",
+      "pathway": "apprentice",
+      "description": "Recover 2 sanity. Draw 1.\nIf you began with block, draw +1.",
+      "sanity": 2,
+      "draw": 1,
+      "draw_if_block": 1
+    },
+    {
+      "id": "folded_distance",
+      "name": "Folded Distance",
+      "cost": 2,
+      "type": "attack",
+      "rarity": "rare",
+      "pathway": "apprentice",
+      "description": "Deal 14 damage. Gain 7 block.\nRetain until played.",
+      "damage": 14,
+      "block": 7,
+      "retain": true
+    },
+    {
+      "id": "beacon_ritual",
+      "name": "Beacon Ritual",
+      "cost": 2,
+      "type": "skill",
+      "rarity": "rare",
+      "pathway": "apprentice",
+      "description": "Heal 9 HP. Recover 4 sanity.\nExhaust.",
+      "heal": 9,
+      "sanity": 4,
+      "exhaust": true
+    },
+    {
+      "id": "open_horizon",
+      "name": "Open Horizon",
+      "cost": 1,
+      "type": "power",
+      "rarity": "rare",
+      "pathway": "apprentice",
+      "description": "Attacks gain +1 damage this encounter.\nGain 1 energy. Draw 1. Exhaust.",
+      "attack_bonus": 1,
+      "energy": 1,
+      "draw": 1,
+      "exhaust": true
+    }
+  ],
+  "enemies": [
+    {
+      "id": "ink_witness",
+      "name": "Ink Witness",
+      "act": 1,
+      "tier": "normal",
+      "max_hp": 30,
+      "description": "A silhouette steps from an unfinished case file.",
+      "intents": [
+        {
+          "kind": "attack",
+          "value": 5
+        },
+        {
+          "kind": "attack",
+          "value": 7
+        },
+        {
+          "kind": "defend",
+          "value": 5
+        }
+      ]
+    },
+    {
+      "id": "porcelain_watch",
+      "name": "Porcelain Watch",
+      "act": 1,
+      "tier": "normal",
+      "max_hp": 27,
+      "description": "A delicate sentry prepares one careful blow behind its glazed shell.",
+      "intents": [
+        {
+          "kind": "defend",
+          "value": 6
+        },
+        {
+          "kind": "attack",
+          "value": 8
+        },
+        {
+          "kind": "attack",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "alley_tracker",
+      "name": "Alley Tracker",
+      "act": 1,
+      "tier": "normal",
+      "max_hp": 32,
+      "description": "Fresh prints lead back to the creature following you.",
+      "intents": [
+        {
+          "kind": "weaken",
+          "value": 1
+        },
+        {
+          "kind": "attack",
+          "value": 7
+        },
+        {
+          "kind": "attack",
+          "value": 8
+        }
+      ]
+    },
+    {
+      "id": "bitter_vial",
+      "name": "Bitter Vial",
+      "act": 1,
+      "tier": "normal",
+      "max_hp": 25,
+      "description": "The spilled experiment moves toward your boots.",
+      "intents": [
+        {
+          "kind": "poison",
+          "value": 2
+        },
+        {
+          "kind": "attack",
+          "value": 5
+        },
+        {
+          "kind": "defend",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "bell_keeper",
+      "name": "Bell Keeper",
+      "act": 1,
+      "tier": "normal",
+      "max_hp": 42,
+      "description": "Each toll draws the empty street a little closer.",
+      "intents": [
+        {
+          "kind": "attack",
+          "value": 8
+        },
+        {
+          "kind": "defend",
+          "value": 7
+        },
+        {
+          "kind": "attack",
+          "value": 10
+        }
+      ]
+    },
+    {
+      "id": "ledger_collector",
+      "name": "Ledger Collector",
+      "act": 1,
+      "tier": "elite",
+      "max_hp": 45,
+      "description": "It fortifies a debt before collecting with two heavy blows.",
+      "intents": [
+        {
+          "kind": "defend",
+          "value": 9
+        },
+        {
+          "kind": "attack",
+          "value": 11
+        },
+        {
+          "kind": "attack",
+          "value": 13
+        },
+        {
+          "kind": "weaken",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "unwritten_fate",
+      "name": "Unwritten Fate",
+      "act": 1,
+      "tier": "boss",
+      "max_hp": 50,
+      "description": "The final page refuses the ending you brought.",
+      "intents": [
+        {
+          "kind": "defend",
+          "value": 8
+        },
+        {
+          "kind": "attack",
+          "value": 11
+        },
+        {
+          "kind": "attack",
+          "value": 13
+        },
+        {
+          "kind": "weaken",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "cinder_runner",
+      "name": "Cinder Runner",
+      "act": 2,
+      "tier": "normal",
+      "max_hp": 38,
+      "description": "A fast courier circles the abandoned furnace.",
+      "intents": [
+        {
+          "kind": "attack",
+          "value": 8
+        },
+        {
+          "kind": "attack",
+          "value": 9
+        },
+        {
+          "kind": "weaken",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "chain_notary",
+      "name": "Chain Notary",
+      "act": 2,
+      "tier": "normal",
+      "max_hp": 46,
+      "description": "Every stamp tightens the links of a protective contract.",
+      "intents": [
+        {
+          "kind": "defend",
+          "value": 10
+        },
+        {
+          "kind": "attack",
+          "value": 12
+        },
+        {
+          "kind": "attack",
+          "value": 7
+        }
+      ]
+    },
+    {
+      "id": "venom_lamp",
+      "name": "Venom Lamp",
+      "act": 2,
+      "tier": "normal",
+      "max_hp": 35,
+      "description": "Green light drips into the dust beneath a broken lamp.",
+      "intents": [
+        {
+          "kind": "poison",
+          "value": 3
+        },
+        {
+          "kind": "attack",
+          "value": 7
+        },
+        {
+          "kind": "defend",
+          "value": 6
+        }
+      ]
+    },
+    {
+      "id": "fog_usher",
+      "name": "Fog Usher",
+      "act": 2,
+      "tier": "normal",
+      "max_hp": 43,
+      "description": "It weakens your grip before waving you down an empty aisle.",
+      "intents": [
+        {
+          "kind": "weaken",
+          "value": 2
+        },
+        {
+          "kind": "attack",
+          "value": 10
+        },
+        {
+          "kind": "attack",
+          "value": 8
+        }
+      ]
+    },
+    {
+      "id": "hollow_duelist",
+      "name": "Hollow Duelist",
+      "act": 2,
+      "tier": "normal",
+      "max_hp": 52,
+      "description": "A courteous bow announces an uncourteous attack.",
+      "intents": [
+        {
+          "kind": "defend",
+          "value": 5
+        },
+        {
+          "kind": "attack",
+          "value": 13
+        },
+        {
+          "kind": "attack",
+          "value": 9
+        }
+      ]
+    },
+    {
+      "id": "glass_inquisitor",
+      "name": "Glass Inquisitor",
+      "act": 2,
+      "tier": "elite",
+      "max_hp": 58,
+      "description": "A mirrored examiner alternates patient guard with relentless questions.",
+      "intents": [
+        {
+          "kind": "defend",
+          "value": 12
+        },
+        {
+          "kind": "weaken",
+          "value": 2
+        },
+        {
+          "kind": "attack",
+          "value": 16
+        },
+        {
+          "kind": "attack",
+          "value": 11
+        }
+      ]
+    },
+    {
+      "id": "clockless_conductor",
+      "name": "Clockless Conductor",
+      "act": 2,
+      "tier": "boss",
+      "max_hp": 65,
+      "description": "Its silent baton conducts the city's missing hours.",
+      "intents": [
+        {
+          "kind": "defend",
+          "value": 10
+        },
+        {
+          "kind": "attack",
+          "value": 14
+        },
+        {
+          "kind": "poison",
+          "value": 3
+        },
+        {
+          "kind": "attack",
+          "value": 17
+        }
+      ]
+    },
+    {
+      "id": "scarlet_reader",
+      "name": "Scarlet Reader",
+      "act": 3,
+      "tier": "normal",
+      "max_hp": 48,
+      "description": "It reads the margin aloud and the ink turns hostile.",
+      "intents": [
+        {
+          "kind": "weaken",
+          "value": 2
+        },
+        {
+          "kind": "attack",
+          "value": 12
+        },
+        {
+          "kind": "attack",
+          "value": 13
+        }
+      ]
+    },
+    {
+      "id": "ash_sentinel",
+      "name": "Ash Sentinel",
+      "act": 3,
+      "tier": "normal",
+      "max_hp": 58,
+      "description": "A brittle tower of ash still knows how to guard the gate.",
+      "intents": [
+        {
+          "kind": "defend",
+          "value": 12
+        },
+        {
+          "kind": "attack",
+          "value": 16
+        },
+        {
+          "kind": "attack",
+          "value": 9
+        }
+      ]
+    },
+    {
+      "id": "rootbound_echo",
+      "name": "Rootbound Echo",
+      "act": 3,
+      "tier": "normal",
+      "max_hp": 45,
+      "description": "Each rustle leaves another poison beneath the roots.",
+      "intents": [
+        {
+          "kind": "poison",
+          "value": 4
+        },
+        {
+          "kind": "attack",
+          "value": 10
+        },
+        {
+          "kind": "defend",
+          "value": 8
+        }
+      ]
+    },
+    {
+      "id": "threshold_hound",
+      "name": "Threshold Hound",
+      "act": 3,
+      "tier": "normal",
+      "max_hp": 54,
+      "description": "It crosses the doorway only after testing your courage.",
+      "intents": [
+        {
+          "kind": "attack",
+          "value": 11
+        },
+        {
+          "kind": "weaken",
+          "value": 2
+        },
+        {
+          "kind": "attack",
+          "value": 15
+        }
+      ]
+    },
+    {
+      "id": "iron_procession",
+      "name": "Iron Procession",
+      "act": 3,
+      "tier": "normal",
+      "max_hp": 63,
+      "description": "The last armored marcher carries the noise of an entire parade.",
+      "intents": [
+        {
+          "kind": "defend",
+          "value": 8
+        },
+        {
+          "kind": "attack",
+          "value": 15
+        },
+        {
+          "kind": "attack",
+          "value": 14
+        }
+      ]
+    },
+    {
+      "id": "nameless_archivist",
+      "name": "Nameless Archivist",
+      "act": 3,
+      "tier": "elite",
+      "max_hp": 72,
+      "description": "It seals a dangerous page, then makes you read it.",
+      "intents": [
+        {
+          "kind": "defend",
+          "value": 14
+        },
+        {
+          "kind": "poison",
+          "value": 3
+        },
+        {
+          "kind": "attack",
+          "value": 18
+        },
+        {
+          "kind": "weaken",
+          "value": 2
+        },
+        {
+          "kind": "attack",
+          "value": 14
+        }
+      ]
+    },
+    {
+      "id": "keeper_of_the_last_door",
+      "name": "Keeper of the Last Door",
+      "act": 3,
+      "tier": "boss",
+      "max_hp": 85,
+      "description": "It holds a patient defense before the door answers with thunder.",
+      "intents": [
+        {
+          "kind": "defend",
+          "value": 12
+        },
+        {
+          "kind": "weaken",
+          "value": 2
+        },
+        {
+          "kind": "attack",
+          "value": 19
+        },
+        {
+          "kind": "poison",
+          "value": 4
+        },
+        {
+          "kind": "attack",
+          "value": 21
+        }
+      ]
+    }
+  ],
+  "relics": [
+    {
+      "id": "folded_map",
+      "name": "Folded Map",
+      "description": "Start each combat with 4 block.",
+      "effect": "start_block",
+      "value": 4
+    },
+    {
+      "id": "tarnished_fang",
+      "name": "Tarnished Fang",
+      "description": "Apply 2 Poison when combat starts.",
+      "effect": "poison_start",
+      "value": 2
+    },
+    {
+      "id": "brass_key",
+      "name": "Brass Key",
+      "description": "Gain 2 block whenever you play a skill.",
+      "effect": "block_on_skill",
+      "value": 2
+    },
+    {
+      "id": "ink_seal",
+      "name": "Ink Seal",
+      "description": "Draw 1 extra card on the first turn of combat.",
+      "effect": "draw_first_turn",
+      "value": 1
+    },
+    {
+      "id": "copper_lung",
+      "name": "Copper Lung",
+      "description": "Recover 2 sanity after each combat.",
+      "effect": "sanity_after_combat",
+      "value": 2
+    },
+    {
+      "id": "pilgrim_brooch",
+      "name": "Pilgrim Brooch",
+      "description": "Heal 3 HP after each combat.",
+      "effect": "heal_after_combat",
+      "value": 3
+    },
+    {
+      "id": "red_lens",
+      "name": "Red Lens",
+      "description": "Attacks gain +1 damage in every combat.",
+      "effect": "attack_bonus",
+      "value": 1
+    },
+    {
+      "id": "candle_wick",
+      "name": "Candle Wick",
+      "description": "Recover 1 sanity when a played card Exhausts.",
+      "effect": "sanity_on_exhaust",
+      "value": 1
+    },
+    {
+      "id": "field_bandolier",
+      "name": "Field Bandolier",
+      "description": "Gain 1 extra energy on the first turn of combat.",
+      "effect": "start_energy",
+      "value": 1
+    },
+    {
+      "id": "midnight_quill",
+      "name": "Midnight Quill",
+      "description": "Heal 4 HP when an enemy is defeated.",
+      "effect": "heal_on_kill",
+      "value": 4
+    },
+    {
+      "id": "stone_amulet",
+      "name": "Stone Amulet",
+      "description": "Increase maximum HP by 8 when acquired.",
+      "effect": "max_hp",
+      "value": 8
+    },
+    {
+      "id": "oath_ring",
+      "name": "Oath Ring",
+      "description": "Start each combat with 8 block.",
+      "effect": "start_block",
+      "value": 8
+    }
+  ],
+  "events": [
+    {
+      "id": "quiet_infirmary",
+      "name": "Quiet Infirmary",
+      "description": "A healer offers clean bandages while an unfamiliar clock ticks backward.",
+      "choices": [
+        {
+          "id": "accept_treatment",
+          "label": "Rest in the infirmary",
+          "description": "Heal 16 HP. Lose 2 sanity.",
+          "effects": {
+            "hp": 16,
+            "sanity": -2
+          }
+        },
+        {
+          "id": "learn_stitch",
+          "label": "Learn a careful stitch",
+          "description": "Add Mercy Stitch. Lose 5 HP.",
+          "effects": {
+            "add_card": "mercy_stitch",
+            "hp": -5
+          }
+        },
+        {
+          "id": "share_silence",
+          "label": "Share a quiet moment",
+          "description": "Recover 4 sanity.",
+          "effects": {
+            "sanity": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "paper_theater",
+      "name": "Paper Theater",
+      "description": "A miniature stage waits for someone to choose its ending.",
+      "choices": [
+        {
+          "id": "learn_misdirection",
+          "label": "Study the false exit",
+          "description": "Add Misdirection. Lose 4 HP.",
+          "effects": {
+            "add_card": "misdirection",
+            "hp": -4
+          }
+        },
+        {
+          "id": "burn_old_script",
+          "label": "Burn one old attack",
+          "description": "Remove one basic attack. Lose 2 sanity.",
+          "effects": {
+            "remove_card": "starting_attack",
+            "sanity": -2
+          }
+        },
+        {
+          "id": "watch_curtain",
+          "label": "Wait for the curtain",
+          "description": "Heal 5 HP. Recover 2 sanity.",
+          "effects": {
+            "hp": 5,
+            "sanity": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "hunters_cache",
+      "name": "Hunter's Cache",
+      "description": "A marked box contains supplies and a warning written for its next owner.",
+      "choices": [
+        {
+          "id": "take_net",
+          "label": "Take the thorn net",
+          "description": "Add Thorn Net. Lose 2 sanity.",
+          "effects": {
+            "add_card": "thorn_net",
+            "sanity": -2
+          }
+        },
+        {
+          "id": "take_bandolier",
+          "label": "Take the bandolier",
+          "description": "Gain Field Bandolier. Lose 12 HP.",
+          "effects": {
+            "gain_relic": "field_bandolier",
+            "hp": -12
+          }
+        },
+        {
+          "id": "repair_boots",
+          "label": "Repair your boots",
+          "description": "Heal 7 HP.",
+          "effects": {
+            "hp": 7
+          }
+        }
+      ]
+    },
+    {
+      "id": "threshold_workshop",
+      "name": "Threshold Workshop",
+      "description": "A craftsperson tests small keys on a door drawn in chalk.",
+      "choices": [
+        {
+          "id": "learn_circuit",
+          "label": "Learn the chalk circuit",
+          "description": "Add Chalk Circuit. Lose 6 HP.",
+          "effects": {
+            "add_card": "chalk_circuit",
+            "hp": -6
+          }
+        },
+        {
+          "id": "trade_ward",
+          "label": "Trade an old ward for focus",
+          "description": "Remove one basic guard. Recover 3 sanity.",
+          "effects": {
+            "remove_card": "starting_guard",
+            "sanity": 3
+          }
+        },
+        {
+          "id": "hold_lantern",
+          "label": "Hold the lantern",
+          "description": "Gain Stone Amulet. Lose 3 sanity.",
+          "effects": {
+            "gain_relic": "stone_amulet",
+            "sanity": -3
+          }
+        }
+      ]
+    },
+    {
+      "id": "broken_observatory",
+      "name": "Broken Observatory",
+      "description": "One telescope sees the road behind you; the other sees no road at all.",
+      "choices": [
+        {
+          "id": "observe_omen",
+          "label": "Record the next omen",
+          "description": "Add Omen Cut. Lose 4 HP.",
+          "effects": {
+            "add_card": "omen_cut",
+            "hp": -4
+          }
+        },
+        {
+          "id": "take_lens",
+          "label": "Take the red lens",
+          "description": "Gain Red Lens. Lose 10 HP and 2 sanity.",
+          "effects": {
+            "gain_relic": "red_lens",
+            "hp": -10,
+            "sanity": -2
+          }
+        },
+        {
+          "id": "close_shutters",
+          "label": "Close the shutters",
+          "description": "Recover 5 sanity.",
+          "effects": {
+            "sanity": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "sealed_letter",
+      "name": "Sealed Letter",
+      "description": "Your name appears on an envelope addressed to a different tomorrow.",
+      "choices": [
+        {
+          "id": "open_letter",
+          "label": "Open the letter",
+          "description": "Add Borrowed Horizon. Lose 3 sanity.",
+          "effects": {
+            "add_card": "borrowed_horizon",
+            "sanity": -3
+          }
+        },
+        {
+          "id": "sign_oath",
+          "label": "Sign the blank reply",
+          "description": "Gain Oath Ring. Lose 10 HP.",
+          "effects": {
+            "gain_relic": "oath_ring",
+            "hp": -10
+          }
+        },
+        {
+          "id": "leave_unread",
+          "label": "Leave it unread",
+          "description": "Heal 6 HP. Recover 2 sanity.",
+          "effects": {
+            "hp": 6,
+            "sanity": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "copper_choir",
+      "name": "Copper Choir",
+      "description": "A machine sings three calm notes in exchange for one of yours.",
+      "choices": [
+        {
+          "id": "learn_formula",
+          "label": "Write down the rhythm",
+          "description": "Add Quiet Formula. Lose 4 HP.",
+          "effects": {
+            "add_card": "quiet_formula",
+            "hp": -4
+          }
+        },
+        {
+          "id": "take_lung",
+          "label": "Keep the copper reed",
+          "description": "Gain Copper Lung. Lose 8 HP.",
+          "effects": {
+            "gain_relic": "copper_lung",
+            "hp": -8
+          }
+        },
+        {
+          "id": "hum_along",
+          "label": "Hum with the machine",
+          "description": "Recover 6 sanity.",
+          "effects": {
+            "sanity": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "pilgrim_bridge",
+      "name": "Pilgrim Bridge",
+      "description": "A tired traveler asks you to carry a small light across the gap.",
+      "choices": [
+        {
+          "id": "carry_light",
+          "label": "Carry the light",
+          "description": "Gain Pilgrim Brooch. Lose 2 sanity.",
+          "effects": {
+            "gain_relic": "pilgrim_brooch",
+            "sanity": -2
+          }
+        },
+        {
+          "id": "learn_passage",
+          "label": "Learn the safe crossing",
+          "description": "Add Safe Passage. Lose 5 HP.",
+          "effects": {
+            "add_card": "safe_passage",
+            "hp": -5
+          }
+        },
+        {
+          "id": "share_food",
+          "label": "Share your provisions",
+          "description": "Heal 10 HP.",
+          "effects": {
+            "hp": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "black_ink_market",
+      "name": "Black Ink Market",
+      "description": "An empty stall sells practical notes at impractical prices.",
+      "choices": [
+        {
+          "id": "buy_notes",
+          "label": "Buy the field notes",
+          "description": "Add Field Notes. Lose 5 HP.",
+          "effects": {
+            "add_card": "field_notes",
+            "hp": -5
+          }
+        },
+        {
+          "id": "buy_seal",
+          "label": "Buy the ink seal",
+          "description": "Gain Ink Seal. Lose 9 HP.",
+          "effects": {
+            "gain_relic": "ink_seal",
+            "hp": -9
+          }
+        },
+        {
+          "id": "sell_attack",
+          "label": "Trade an old attack",
+          "description": "Remove one basic attack. Heal 5 HP.",
+          "effects": {
+            "remove_card": "starting_attack",
+            "hp": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "candle_trial",
+      "name": "Candle Trial",
+      "description": "A candle burns more brightly when you give it something to remember.",
+      "choices": [
+        {
+          "id": "keep_wick",
+          "label": "Keep its last wick",
+          "description": "Gain Candle Wick. Lose 6 HP.",
+          "effects": {
+            "gain_relic": "candle_wick",
+            "hp": -6
+          }
+        },
+        {
+          "id": "feed_match",
+          "label": "Learn to borrow its flame",
+          "description": "Add Last Match. Lose 1 sanity.",
+          "effects": {
+            "add_card": "last_match",
+            "sanity": -1
+          }
+        },
+        {
+          "id": "end_trial",
+          "label": "Extinguish it gently",
+          "description": "Heal 5 HP. Recover 4 sanity.",
+          "effects": {
+            "hp": 5,
+            "sanity": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "door_without_room",
+      "name": "Door Without a Room",
+      "description": "A free-standing door offers a route with no visible destination.",
+      "choices": [
+        {
+          "id": "step_through",
+          "label": "Take the impossible shortcut",
+          "description": "Add Folded Distance. Lose 8 HP.",
+          "effects": {
+            "add_card": "folded_distance",
+            "hp": -8
+          }
+        },
+        {
+          "id": "study_hinge",
+          "label": "Study the hinge",
+          "description": "Increase maximum HP by 6. Lose 2 sanity.",
+          "effects": {
+            "max_hp": 6,
+            "sanity": -2
+          }
+        },
+        {
+          "id": "stay_here",
+          "label": "Keep your feet on the ground",
+          "description": "Heal 8 HP. Recover 2 sanity.",
+          "effects": {
+            "hp": 8,
+            "sanity": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "last_margin",
+      "name": "The Last Margin",
+      "description": "There is just enough blank paper left for a promise, a prayer, or a correction.",
+      "choices": [
+        {
+          "id": "write_miracle",
+          "label": "Write a small miracle",
+          "description": "Add Pocket Miracle. Lose 10 HP.",
+          "effects": {
+            "add_card": "pocket_miracle",
+            "hp": -10
+          }
+        },
+        {
+          "id": "write_name",
+          "label": "Write a new name",
+          "description": "Gain Midnight Quill. Lose 3 sanity.",
+          "effects": {
+            "gain_relic": "midnight_quill",
+            "sanity": -3
+          }
+        },
+        {
+          "id": "erase_guard",
+          "label": "Erase an old defense",
+          "description": "Remove one basic guard. Heal 8 HP.",
+          "effects": {
+            "remove_card": "starting_guard",
+            "hp": 8
+          }
+        }
+      ]
+    }
+  ]
+}

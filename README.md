@@ -1,5 +1,27 @@
 # Beyond the Gray Fog
 
+เกม Android native อยู่ที่ `mobile/` ใช้ Godot Control UI และ GDScript engine
+สร้างเป็น APK ที่ติดตั้งและเล่นออฟไลน์ได้ พร้อม local save และ optional online backup
+เริ่มตาม [ขั้นถัดไปสำหรับมือถือและเซฟออนไลน์](docs/START_NEXT_ANDROID.md),
+[วิธี build/install APK](docs/ANDROID_BUILD.md) และ [ตั้ง Supabase](docs/ONLINE_BACKEND.md)
+workflow **Build Android APK** ใน GitHub Actions ใช้กด build เองจาก `main`
+
+```sh
+bash tools/setup_android.sh
+bash tools/build_android.sh
+```
+
+ผล APK อยู่ที่ `.local/android-artifacts/gray-fog-debug.apk`
+การ build ไม่สร้างบัญชี Supabase หรือเผยแพร่แอปขึ้นร้านค้า
+ดู [content และระบบที่ออกแบบใหม่](docs/CONTENT_DESIGN.md) สำหรับสายการเล่นและคอมโบ
+ฉบับมือถือมี 3 สายการเล่น, 54 การ์ด, 21 ศัตรู, 12 อีเวนต์ / 36 ทางเลือก และ 12 relics
+เส้นทางสุ่มจาก seed ผ่าน 3 องก์ / 12 การต่อสู้ พร้อมเลือกศัตรู พัก และรับ relic
+
+![เกม native ที่รันจริงด้วย Godot บน Linux](docs/images/native-gameplay.png)
+
+ภาพนี้จับจาก native viewport บน Linux; ยังไม่ใช่ภาพจากมือถือ Android
+ดู [ผลตรวจ engine, UI, APK และ cloud saves](docs/VALIDATION.md)
+
 ต้นแบบเกมเว็บแนว roguelike deckbuilding พร้อมเครื่องมือวิจัย APK/XAPK และฐานความรู้
 ออฟไลน์สำหรับ Codex พัฒนาต่อใน repository เดียวกัน
 
@@ -16,11 +38,11 @@
 wireframe ที่เลือกฉาก/ตรวจ node ได้โดยไม่รันเกม ดู [ผลวิเคราะห์ bootstrap](docs/research/CHAOS_BOOTSTRAP_ANALYSIS.md)
 และ [วิธีเปิด wireframe บน Windows](docs/BOOTSTRAP_REPLAY.md)
 
-![ภาพต้นแบบที่รันจริงใน Chromium](docs/images/prototype-desktop.png)
+## ต้นแบบเว็บเดิมและเครื่องมือวิจัย
 
-[ภาพบนหน้าจอมือถือ](docs/images/prototype-mobile.png) · [ผลตรวจการทำงาน](docs/VALIDATION.md)
+![ต้นแบบเว็บเดิมที่รันจริงใน Chromium](docs/images/prototype-desktop.png)
 
-## เริ่มใช้งาน
+[ภาพต้นแบบเว็บที่ขนาดหน้าจอมือถือ](docs/images/prototype-mobile.png)
 
 ต้องมี Node >=22.12 และ <25 (ทดสอบด้วย 24.19.0), npm และ Python 3.12
 
@@ -91,10 +113,24 @@ python tools/lore_index.py search --index .local/lore-index.json \
 `lore/sources.json` ก่อนอ้างว่าเป็นข้อเท็จจริงจาก LoTM หรือ Circle of Inevitability
 อ่าน [วิธีใช้ Codex](docs/CODEX_WORKFLOW.md) และ [แหล่ง lore](docs/LORE_SOURCES.md)
 
+ได้รับนิยายจีนที่ผู้ใช้แนบทั้งสองเรื่องแล้ว เครื่องมือค้นใหม่ไม่ต้องใช้เว็บไซต์/API:
+
+```sh
+python tools/import_novel_lore.py search --index .local/lore/novels-zh/index.sqlite3 \
+  --query "克莱恩" --source lotm-zh --limit 2
+```
+
+ดัชนีและต้นฉบับส่วนตัวอยู่ `.local/` ไม่เข้า APK/Git ถ้าเป็น clone ใหม่ที่ยังไม่มี
+private corpus ให้ import จากไฟล์ของผู้ใช้ตามคู่มือ
+[ใบรับนิยาย](docs/research/LOTM_COI_SOURCE_RECEIPT.md) บันทึก hashes/บท/encoding
+และขอบเขตที่ตรวจได้; ชื่อเรื่องเป็นข้อมูลที่ผู้ใช้ระบุ ไม่รับรอง edition/completeness
+
 ## โครงสร้าง
 
 ```text
 src/          เกมและ UI ที่เล่นได้
+mobile/       เกม Godot native สำหรับ Android
+backend/      Supabase schema สำหรับ player-owned cloud saves
 tests/        ทดสอบ engine และเครื่องมือวิจัย
 tools/        อ่าน archive, ค้น lore, browser smoke test
 lore/         ข้อมูลตัวอย่างพร้อม provenance

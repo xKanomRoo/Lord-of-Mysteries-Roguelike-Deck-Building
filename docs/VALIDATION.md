@@ -1,5 +1,48 @@
 # ผลตรวจในเครื่องคลาวด์
 
+## เกม native Android รุ่น 0.2.0
+
+ตรวจเมื่อ 3 ตุลาคม 2026 ตามเวลาไทย ด้วย Godot 4.6.3 official,
+Temurin JDK 17.0.18+8 และ Android build-tools 36.0.0
+เกมมี 3 pathways, 54 cards, 21 enemies, 12 events / 36 choices และ 12 relics
+ผ่าน 3 acts / 12 combats; ข้อมูลและกฎเป็น original adaptation
+
+| Check | ผลล่าสุด |
+|---|---|
+| Python suite ทั้ง repository | ผ่าน 344 tests ไม่มี skipped; รวม novel importer 15, public cloud config 6 และ mobile content 9 เพิ่มจาก research baseline 314 |
+| Native engine | ผ่าน 1,497 assertions; เล่นครบ 12 combats ด้วย legal actions ทั้ง Seer, Hunter และ Apprentice; validate เซฟระหว่าง transitions |
+| Native UI ที่ render จริง | ผ่าน 1,801 checks, 266 GUI clicks และ 1 InputEventScreenTouch; ครบ 12 combats และ victory; ตรวจข้อความทั้ง 54 cards, 36 event choices และ 12 relic choices |
+| Native layout | ภาพจริงที่ 960×540, 1280×720, 1600×720 และ 1600×900; ปุ่มและข้อความอยู่ใน viewport/card/choice bounds; ใช้ Linux X11 + Mesa llvmpipe ไม่ใช่มือถือ Android |
+| Native runtime log | ไม่มี SCRIPT ERROR / ERROR; Mesa รายงาน unsupported VSync ซึ่งไม่ขัดขวางการ render |
+| Fresh source import | copy `mobile/` โดยไม่มี `.godot` cache, ใช้ XDG directories ใหม่; import + 1,497 engine assertions + 41 cloud protocol checks ผ่าน |
+| Cloud adapter | 41 checks ผ่านด้วย protocol fixtures ไม่มี network requests; schema constants ตรง native save v2 |
+| SQL / RLS ที่รันจริง | PostgreSQL 17.11 local: 18 checks ผ่าน; own read, cross-account / anonymous denial, restricted updates, revisions, timestamps และ JSON bounds; rollback แล้วไม่มี test tables/roles ค้าง |
+| APK export | สร้างและตรวจ signed debug APK จริง 27,854,139 bytes; version 0.2.0/code 2, package `org.grayfog.deckbuilder`, ARM64, landscape, min API 24 / target 36 |
+| APK integrity | CRC, v2/v3 signature และ SHA ผ่าน; native libraries และ DEX ตรง official Godot Android template; `assets/data/content.json` ตรง source bytes |
+| Public config / CI modes | offline, publishable, legacy anon และ invalid/secret/missing-config cases ตรวจผ่าน; workflow กดเองพร้อม build/upload source; ยังไม่ได้รัน GitHub Actions จาก GitHub จริง |
+| นิยายจีนใน private index | GB18030 strict roundtrip; 13,904 chapter-bounded chunks; SQLite integrity ผ่านและ derive ทุก chunk ใหม่ตรง source; 6 bounded query matches ตรวจ hashes/lines/offsets ซ้ำ |
+| Browser production build | `npm run build` ผ่าน; browser source เดิมไม่มีการแก้ใน native task |
+
+APK SHA-256:
+`7a6cdb88d8d9f82f1d1bcc403cd388c2a1313122ded91797c457863dc9ee9c02`
+
+Content SHA-256:
+`8e0620664eb9a91e6ad53682b02b73e4f9160b1798e8289dec8b3206481e87f2`
+
+APK อยู่ `.local/android-artifacts/gray-fog-debug.apk` พร้อม hash และ verification
+receipt; ไม่ commit SDK, keystore, APK, novels, private indexes หรือ reference assets
+ใน Git ภาพ `docs/images/native-gameplay.png` จับจาก project ที่ render จริง
+และ source hashes ก่อน/หลัง UI run ตรงกัน
+
+APK ที่ให้ในแชตเล่นออฟไลน์และเซฟในเครื่องได้ ยังไม่มี Supabase project config
+local SQL/protocol tests ไม่ใช่การ deploy และทดสอบกับ Supabase จริง
+ยังไม่ได้ติดตั้ง/เปิด APK บน Android hardware หรือ LDPlayer จากคลาวด์
+การผ่าน engine tests ไม่พิสูจน์ความสนุกระยะยาวหรือสมดุลทุก seed
+ดู [วิธีติดตั้ง](ANDROID_BUILD.md), [ระบบที่ขยาย](CONTENT_DESIGN.md)
+และ [เปิดเซฟออนไลน์](ONLINE_BACKEND.md)
+
+## ต้นแบบเว็บและงานวิจัยก่อนขยายเป็น native
+
 สภาพแวดล้อมที่ทดสอบ: Node 24.19.0, npm 11.9.0, Python 3.12.14,
 Vite 7.3.6 จาก lockfile และ Chromium 151 บน Linux
 
@@ -7,7 +50,7 @@ Vite 7.3.6 จาก lockfile และ Chromium 151 บน Linux
 |---|---|
 | ติดตั้งด้วย `npm ci` | ผ่าน; hash ของ package-lock.json ก่อน/หลังตรงกัน |
 | `npm test` | ผ่าน 12 tests, ไม่มี skipped |
-| `npm run test:python` | ผ่าน 314 tests, ไม่มี skipped; เพิ่ม fixed range ZIP reader 18, observed DB parser 12 และ five-scene replay 11 จาก suite เดิม 273 |
+| Python research baseline | ก่อน native task ผ่าน 314 tests ไม่มี skipped; เพิ่ม fixed range ZIP reader 18, observed DB parser 12 และ five-scene replay 11 จาก suite เดิม 273; current full suite 344 ตามตารางด้านบน |
 | `npm run build` | ผ่าน; ได้ production bundle |
 | `npm run lore:build` และค้น `ritual memory` | ผ่าน; 1 original-design source, 2 chunks, source/hash/line refs |
 | `npm run smoke` | ผ่านใน Chromium จริง; ชนะสามห้องด้วย 50 การกระทำและเลือกสองรางวัล |
@@ -47,7 +90,8 @@ Vite 7.3.6 จาก lockfile และ Chromium 151 บน Linux
 | Wireframe หลัง native schema | สร้างใหม่ได้ 18 scenes / 474 nodes รวม geometry ของ TileSprite; browser check ที่รายงานด้านบนทำกับ bootstrap รุ่นก่อน native schema |
 | เว็บไซต์ lore | HEAD ถูก proxy ปฏิเสธ 403; draft domains ยังไม่ยืนยัน runtime propagation |
 
-ภาพใน `docs/images/` มาจากเกมต้นแบบนี้ใน Chromium เป็นภาพและ UI ที่สร้างใหม่
+ภาพ `prototype-*.png` ใน `docs/images/` มาจากต้นแบบเว็บใน Chromium
+ส่วน `native-gameplay.png` มาจาก Godot บน Linux ภาพและ UI เป็นงานสร้างใหม่
 ไม่ใช่ภาพหน้าจอ Chaos Zero Nightmare
 
 การผ่าน tests ของ archive ใช้ข้อมูลจำลอง ไม่พิสูจน์ผลกับ XAPK จริง

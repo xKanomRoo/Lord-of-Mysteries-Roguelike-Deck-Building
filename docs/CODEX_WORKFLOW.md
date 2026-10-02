@@ -14,8 +14,8 @@
    ลดจำนวนคลิก หรือทำให้ต้นทุนความเสี่ยงของการ์ดชัดเจน
 4. **ทำ feature ทีละส่วน:** แก้ engine ก่อน presentation เมื่อเปลี่ยนกฎ
    เพิ่มแหล่ง lore เมื่อมีหลักฐานรองรับเนื้อหา ไม่แต่ง canon ขึ้นแล้วอ้างว่า verified
-5. **ตรวจผล:** unit tests ของกฎเกม, build, browser interaction, screenshot
-   การตอบ HTTP 200 หรือเปิดพอร์ตได้อย่างเดียวไม่ตรวจว่าการ์ดกดได้
+5. **ตรวจผล:** native engine tests, Control interaction และภาพจาก Godot;
+   export และตรวจ APK หลังแก้เกมมือถือ browser smoke ใช้สำหรับต้นแบบเว็บเดิม
 6. **บันทึก:** ใส่ design decision, source และข้อจำกัดไว้ใน Git งานถัดไปจึงรับช่วงได้
 
 ## APK บอกอะไรได้โดยไม่เล่นเกม
@@ -44,12 +44,15 @@ card/effect DBs และ hand/card UI geometry แล้ว อ่าน
 ## Prompt สำหรับงานถัดไป
 
 ```text
-อ่าน AGENTS.md, docs/EVIDENCE_STATUS.md และผลค้น lore ที่แนบ
-เพิ่ม event ที่ผู้เล่นเลือกระหว่างฟื้น sanity กับเพิ่มการ์ดที่มีต้นทุนสูง
-ระบุว่าเนื้อหาใดเป็น original design และ cite source สำหรับข้อเท็จจริง canon
-ให้ engine ยังคง deterministic เมื่อใช้ seed เดิม
-เขียน tests ของทั้งสองทางเลือก แล้วตรวจ UI ด้วย browser smoke
-สรุปผลต่อผู้เล่นและสิ่งที่หลักฐานจาก APK ยังตอบไม่ได้
+อ่าน AGENTS.md, docs/CONTENT_DESIGN.md และ docs/ANDROID_BUILD.md
+พัฒนา mobile/ ต่อจาก 54 cards, 21 enemies, 12 events และ 12 relics
+เพิ่มชุด content ใหม่ที่มีการตัดสินใจด้าน setup/payoff และ sanity/tempo
+ค้นนิยายจีนผ่าน tools/import_novel_lore.py เฉพาะส่วนที่เกี่ยวข้อง
+แนบ source/chapter/hash สำหรับธีมที่ค้นพบ แยกกฎใหม่เป็น original adaptation
+เพิ่ม effects ใหม่ใน engine และ UI ก่อนใส่ fields ใน content.json
+รักษา deterministic seed และเพิ่ม save migration หากเปลี่ยน schema
+ตรวจคอมโบจริง ข้อความการ์ด การเล่นครบ run และ native UI
+สร้าง APK ใหม่ด้วย bash tools/build_android.sh และรายงานข้อจำกัดที่ยังไม่ทดสอบ
 ```
 
 ## มาตรฐานเนื้อหา

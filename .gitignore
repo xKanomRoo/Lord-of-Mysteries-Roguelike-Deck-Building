@@ -12,3 +12,8 @@ research/generated/
 *.xapk
 *.apks
 *.part[0-9]*
+mobile/.godot/
+mobile/android/
+mobile/cloud-config.json
+*.keystore
+*.jks

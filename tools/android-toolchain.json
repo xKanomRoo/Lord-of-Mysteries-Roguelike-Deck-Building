@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "godot_version": "4.6.3",
+  "godot_version_output": "4.6.3.stable.official.7d41c59c4",
+  "template_version": "4.6.3.stable",
+  "java_version": "17.0.18+8",
+  "build_tools_version": "36.0.0",
+  "target_sdk": 36,
+  "min_sdk": 24,
+  "package_name": "org.grayfog.deckbuilder",
+  "apk_version_code": 2,
+  "apk_version_name": "0.2.0",
+  "content_counts": {"pathways": 3, "cards": 54, "enemies": 21, "events": 12, "relics": 12},
+  "license_url": "https://developer.android.com/studio/terms",
+  "android_sdk_license_sha1": "9002c006f4b8d9a16e715a9fa4df30ddb8abf9d9",
+  "archive_limits": {
+    "temurin-jdk.tar.gz": {"compressed_bytes": 193062224, "selected_members": 542, "expanded_bytes": 331637824},
+    "commandline-tools.zip": {"compressed_bytes": 163426701, "selected_members": 108, "expanded_bytes": 163404661},
+    "build-tools36.zip": {"compressed_bytes": 63737259, "selected_members": 168, "expanded_bytes": 153141817},
+    "platform36.zip": {"compressed_bytes": 66057671, "selected_members": 11342, "expanded_bytes": 106244745},
+    "platform-tools.zip": {"compressed_bytes": 9054187, "selected_members": 12, "expanded_bytes": 22198160},
+    "godot-templates.tpz": {"compressed_bytes": 1255918323, "selected_members": 3, "expanded_bytes": 227401942},
+    "godot-editor.zip": {"compressed_bytes": 71806687, "selected_members": 1, "expanded_bytes": 138981968}
+  },
+  "sources": {
+    "google": "https://dl.google.com/android/repository/repository2-1.xml",
+    "godot": "https://github.com/godotengine/godot/releases/download/4.6.3-stable/SHA512-SUMS.txt",
+    "java": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.18%2B8/OpenJDK17U-jdk_x64_linux_hotspot_17.0.18_8.tar.gz.sha256.txt",
+    "api_requirements": "https://github.com/godotengine/godot/blob/4.6.3-stable/platform/android/export/export_plugin.cpp"
+  },
+  "archives": [
+    {
+      "name": "temurin-jdk.tar.gz",
+      "url": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.18%2B8/OpenJDK17U-jdk_x64_linux_hotspot_17.0.18_8.tar.gz",
+      "sha256": "0c94cbb54325c40dcf026143eb621562017db5525727f2d9131a11250f72c450",
+      "destination": "jdk",
+      "strip_prefix": "jdk-17.0.18+8/"
+    },
+    {
+      "name": "commandline-tools.zip",
+      "url": "https://dl.google.com/android/repository/commandlinetools-linux-12700392_latest.zip",
+      "sha256": "330f0db00456c26d0a7e6c7793a022fe170e5dbc03472f76e121db37cb6d4744",
+      "official_sha1": "da3424ea38b72d85258174a76aa286b7d4e0b700",
+      "destination": "sdk/cmdline-tools/17.0",
+      "strip_prefix": "cmdline-tools/"
+    },
+    {
+      "name": "build-tools36.zip",
+      "url": "https://dl.google.com/android/repository/build-tools_r36_linux.zip",
+      "sha256": "5d9ac77fb6ff43d9da518a337b4fcf8f9097113df531d99ccefe80ef7ce8250b",
+      "official_sha1": "b0b6376977657e8ad9b969bacf4093601da2c6fb",
+      "destination": "sdk/build-tools/36.0.0",
+      "strip_prefix": "android-16/"
+    },
+    {
+      "name": "platform36.zip",
+      "url": "https://dl.google.com/android/repository/platform-36-ext19_r01.zip",
+      "sha256": "55bd3620999428ff13097c982c9f0d40de566d846f0bed153bf8d4e1491b90ff",
+      "official_sha1": "52e240c229cf2ad561ee262ebdfff266e180c585",
+      "destination": "sdk/platforms/android-36",
+      "strip_prefix": "android-36-ext19/"
+    },
+    {
+      "name": "platform-tools.zip",
+      "url": "https://dl.google.com/android/repository/platform-tools_r37.0.1-linux.zip",
+      "sha256": "d230f13842f60f782a8645f9c813f8f845bf36089ea7289f28c48f17979313f1",
+      "official_sha1": "477254aa5f903c15cf51001717bdf347fb6b53e0",
+      "destination": "sdk/platform-tools",
+      "strip_prefix": "platform-tools/"
+    },
+    {
+      "name": "godot-templates.tpz",
+      "url": "https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_export_templates.tpz",
+      "sha256": "3fbe2c0e2dec9d537ab9ec97bcf8da91dcf23357fc51f67092dd068d839290a8",
+      "official_sha512": "da606b61c10157844f8300172df374472665f95015495cb1a7cd132c40ede404faa96cc1016a4b9662db9909ddea69632c4948b2cd11163438dad4808881fb68",
+      "destination": "xdg-data/godot/export_templates/4.6.3.stable",
+      "strip_prefix": "templates/",
+      "members": ["android_debug.apk", "android_release.apk", "version.txt"]
+    },
+    {
+      "name": "godot-editor.zip",
+      "url": "https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_linux.x86_64.zip",
+      "sha256": "d0bc2113065e481c9c2c2b2c37daa4e8be3fe9e27f0ab9ab0b6096e9a37907f3",
+      "official_sha512": "a035258da32b77f966a5376f9fa29c30a6adde826a85ba918e1605bd1fc9823eba7d85f1dd5e748956bd2ba72827c0025ffa11bb82aec91128c407a2e723c99c",
+      "destination": "godot",
+      "strip_prefix": "",
+      "optional_editor": true
+    }
+  ]
+}
