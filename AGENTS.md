@@ -165,8 +165,11 @@ the next player-visible priority; no transcript dumping or unrelated repository 
   docs/research/CHAOS_RUNTIME_ANALYSIS.md: manifest has 87,529 unique paths;
   text DB yielded 108,306 English entries including 4,725 card text entries.
   Counts include fields/variants, not playable card counts. Source inventory hash declared by these ZIPs differs from
-  the earlier uploaded inventory; do not conflate them. Select only the 18
-  source-pinned DB/CSB ranges; do not request all base chunks or app data.
+  the earlier uploaded inventory; do not conflate them. The original selected
+  profile remains pinned to 18 DB/CSB ranges. The user's later explicit
+  "ขอทั้งหมดเลย" authorizes all manifest-described installed resources via the
+  separate streaming/batched tools in docs/ALL_CZN_RESOURCES.md; preserve the old
+  profile and do not export app/account data or request entire emulator disks.
   That range ZIP has now arrived: all 18 payloads passed CRC/SHA/Zstd/FHSH,
   1,342,080 decoded bytes. Read docs/research/CHAOS_CARD_BATTLE_ANALYSIS.md:
   eight DB shards contain 2,691 rows (278 card rows including variants) and five
@@ -179,6 +182,13 @@ the next player-visible priority; no transcript dumping or unrelated repository 
   inferred. Saved labels/branch counts are not balance rules or hand limits.
   Complete AP/end-turn HUD, nested CSBs, reference art and runtime assembly
   are not supplied by this five-scene selection. All full research stays ignored.
+- The complete received English group was subsequently extracted: 36 resources,
+  including 29 additional SCTs and three SCSP/atlas sets. Total delivered gallery
+  is now 140 PNGs / ten raw SCSP+atlas sets; localized English UI, not new character
+  art or reconstructed rigs. Full manifest metadata catalogs 87,529 paths; 55 have
+  verified container bytes here and 87,474 remain metadata-only. Do not repeat the
+  obsolete 111-image count as the current total. Full all-resource exporter/reader
+  code and fixtures do not prove all data was read from the user's Windows device.
 - Use original authored art and text for the playable game. Temporary placeholders
   are scaffolding and do not satisfy visual requests. Import reference
   assets into the product only when the user has supplied appropriate permission.

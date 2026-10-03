@@ -3,6 +3,12 @@
 ตรวจ bytes ในเครื่องซ้ำวันที่ 3 ตุลาคม 2026 ตามเวลาไทย หลังผู้ใช้ถามว่า
 ทำไมเกม native มีแต่ข้อความ ทั้งที่มีข้อมูลของเกมอ้างอิงแล้ว
 
+อัปเดตหลังคำขอ **“ขอทั้งหมดเลย”**: ถอด English resources ที่ได้รับแต่ยังไม่
+ถอดก่อนหน้าเพิ่ม 29 textures เป็น PNG แล้ว แกลเลอรีปัจจุบันรวม **140 PNG /
+10 SCSP+atlas ชุด** ภาพที่เพิ่มเป็น localized UI/status/banner/stage-clear
+ดู [ผลและวิธีรับทรัพยากรทั้งหมด](ALL_CZN_RESOURCES.md)
+ตาราง bootstrap ด้านล่างยังบอกขอบเขตแพ็กเริ่มเกมเดิม ไม่ใช่ยอดรวมปัจจุบัน
+
 **มีภาพจริงอยู่แล้ว** เกม native รุ่น 0.2.0 ยังใช้ procedural placeholder
 เพราะ implementation ไม่ได้พัฒนางานภาพตามความต้องการของผู้ใช้
 จำนวน card definitions ไม่เท่ากับจำนวนภาพการ์ด และการผ่าน engine/UI tests
@@ -100,3 +106,7 @@ stored bytes 3,608,239 ครอบคลุม model/portrait/card art/frame/en
 นี่เป็น proposal ไม่ใช่ plan ที่รันกับ exporter เดิมซึ่ง pin เฉพาะ 18 DB/CSB paths
 ต้องเพิ่ม art profile/exporter/reader ที่ตรวจ exact paths/hashes/ranges ก่อนใช้
 ไม่ต้องส่งทั้งเกมหรือ account data เพื่อเลือกดูงานภาพชุดเล็กนี้
+
+คำขอล่าสุดให้รับทั้งหมดแทนชุดตัวอย่างนี้ ใช้ exporter/reader ใหม่ตาม
+[ALL_CZN_RESOURCES](ALL_CZN_RESOURCES.md); proposal สิบไฟล์ยังเป็น metadata
+อย่านำไปเรียก exporter เดิมหรืออ้างว่ารับภาพ runtime หมวดนั้นแล้ว

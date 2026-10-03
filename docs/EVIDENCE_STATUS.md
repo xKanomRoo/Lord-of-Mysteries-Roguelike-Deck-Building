@@ -21,8 +21,9 @@
 | Card/battle range export | ได้รับและตรวจ ZIP แล้ว | source indexประกาศToybox backend; 18payloads622,458stored/1,342,080decodedbytesผ่านCRC/SHA/manifestrows/Zstd/FHSH; surrounding span/fullchunk hashes และ exporter scope assertions ยังไม่ independently verified |
 | Selected DB shards | อ่านแปด shards ครบ | 2,691rows/5,780records; source-pinned wrapper/schema/index/bucket/fullcoverageผ่าน; trailer38bytesตรวจตรงแต่purposeunknown; fulltablesไม่commit |
 | Card/hand UI | อ่านห้าฉากครบ documented subset | 683nodes/682WidgetOptions/unsupportedTileSprite1; cardroot0x0จริงและdiagramviewportinferred; handbranches1–13เป็นsavedalternatives; fullHUD/animation/assetsยังไม่ยืนยัน |
-| Texture images | ถอด PNG ได้ 108 ไฟล์ และ PNG เดิม 3 | มี title illustration พร้อมตัวละคร, character-parts atlas และ lobby atlas จริง; ดู REFERENCE_VISUAL_RESULTS; ไม่ใช่ screenshot เกมที่ประกอบแล้ว |
-| SCSP / model art | รับ SCSP/atlas 7 ชุดใน bootstrap | ยังไม่ได้ประกอบ animation/rig; ไม่มี verified reconstructed 3D/Live2D; runtime portrait/card/model art มีชื่อใน manifest แต่ payloads ยังไม่ได้รับ |
+| Texture images | รวม 140 PNG: bootstrap 108 textures + 3 PNG เดิม และ English 29 textures | มี title illustration พร้อมตัวละคร, character-parts atlas และ lobby atlas จริง; English ที่เพิ่มเป็น UI/status/banner; ดู REFERENCE_VISUAL_RESULTS; ไม่ใช่ screenshot เกมที่ประกอบแล้ว |
+| SCSP / model art | รับ SCSP/atlas 10 ชุด: bootstrap 7 + English 3 | ยังไม่ได้ประกอบ animation/rig; ไม่มี verified reconstructed 3D/Live2D; runtime portrait/card/model art มีชื่อใน manifest แต่ payloads ยังไม่ได้รับ |
+| คำขอรับทรัพยากรทั้งหมด | manifest 87,529 paths; มี bytes 55 / ยังไม่มี 87,474 | stored รวม 7.70 GiB; ชุด English ที่ได้รับถอดครบ 36 resources; ดู ALL_CZN_RESOURCES สำหรับ exporter แบบแบ่งชุดและข้อจำกัดการรับไฟล์ |
 | กฎต้นแบบใน repository นี้ | งานออกแบบใหม่ | browser demo ใน `src/`; Godot native Android ใน `mobile/`; ไม่ใช่ recovered CZN runtime |
 | Native mobile content | original adaptation แยกจาก research | 3pathways/54cards/21enemies/12events36choices/12relics, 3acts12combats; source และ save schemas มี tests; ดู CONTENT_DESIGN |
 | นิยายจีนผู้ใช้ | อ่านและนำเข้า private corpus แล้ว | 2files17,812,214bytes strict/roundtripGB18030,13,904chunks; hashes/chapters/line offsets ตรวจจริง; edition/completenessไม่ยืนยัน; fulltext/indexไม่เข้าGit/APK |

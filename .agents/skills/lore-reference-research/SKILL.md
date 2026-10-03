@@ -58,8 +58,11 @@ uncertain translations or chronology. Do not put the novels into APK/player stor
 
 - A source claim needs the actual archive/resource path, hash and report scope.
   Check received bytes, not just a manifest entry or a filename containing “model”.
-- Current visual evidence is 111 recovered PNGs and 7 SCSP/atlas sets, not seven
-  assembled animated characters. The 1,004 card-art names and 235 portrait-set
+- Current visual evidence is 140 recovered PNGs and 10 SCSP/atlas sets, not ten
+  assembled animated characters. The 29 additional English textures are localized
+  UI/status/banner imagery. See docs/ALL_CZN_RESOURCES.md for the user's explicit
+  all-resource request and the separate batched exporter; the old fixed 18-resource
+  profile must retain its scope/checks. The 1,004 card-art names and 235 portrait-set
   names remain metadata unless their payloads have subsequently arrived.
 - Show actual recoverable pictures when the user asks about visuals; do not answer
   only with counts or wireframes. Label an atlas, illustration, layout diagram and
